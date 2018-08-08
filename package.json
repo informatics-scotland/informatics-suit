@@ -1,6 +1,6 @@
 {
-  "name": "@attivio/suit",
-  "version": "0.0.29",
+  "name": "@informatics-scotland/informatics-suit",
+  "version": "0.1.0",
   "description": "Attivio SUIT, the Search UI Toolkit, is a library for creating search clients for searching the Attivio platform.",
   "keywords": [
     "Attivio",
@@ -11,13 +11,13 @@
     "React",
     "react-component"
   ],
-  "homepage": "attivio.com",
+  "homepage": "https://sepa.org.uk",
   "bugs": {
-    "url": "https://github.com/attivio/suit/issues",
-    "email": "suitbugs@attivio.com"
+    "url": "https://github.com/informatics-scotland/informatics-suit",
+    "email": "spotfire@sepa.orguk"
   },
   "license": "SEE LICENSE IN LICENSE",
-  "author": "Attivio, Inc.",
+  "author": "Colin Gray, SEPA",
   "files": [
     "css",
     "es",
@@ -26,7 +26,7 @@
   ],
   "main": "lib/index.js",
   "module": "es/index.js",
-  "repository": "https://github.com/attivio/suit",
+  "repository": "https://github.com/informatics-scotland/informatics-suit",
   "scripts": {
     "build": "nwb build-react-component",
     "clean": "nwb clean-module",
