@@ -2409,6 +2409,10 @@ const documents = documentsJson.map((documentJson) => {
 const fieldsCopy = new Map(documents[9].fields);
 const docWithChildren = new SearchDocument(fieldsCopy);
 docWithChildren.children = documents.slice(0, 9);
+const spotfireFields = fieldsCopy;
+spotfireFields.set('pki.suit.type', ['spotfire']);
+spotfireFields.set('table', ['spotfire']);
+const spotfireDoc = new SearchDocument(spotfireFields);
 
 const sampleDocs = {
   rawDocuments: documents,
@@ -2417,6 +2421,7 @@ const sampleDocs = {
   elsalvador: documents[3],
   bolivia: documents[4],
   docWithChildren,
+  spotfire: spotfireDoc
 };
 
 export default sampleDocs;

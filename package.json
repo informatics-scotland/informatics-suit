@@ -3,13 +3,6 @@
   "version": "0.1.0",
   "description": "Attivio SUIT, the Search UI Toolkit, is a library for creating search clients for searching the Attivio platform.",
   "keywords": [
-    "Attivio",
-    "AIE",
-    "SUIT",
-    "Search UI",
-    "Search",
-    "React",
-    "react-component"
   ],
   "homepage": "https://sepa.org.uk",
   "bugs": {

@@ -1,3 +1,5 @@
+import SpotfireWebPlayer from "./components/SpotfireWebPlayer";
+
 // API classes
 export AbstractDocument from './api/AbstractDocument';
 export FacetFilter from './api/FacetFilter';
@@ -124,6 +126,7 @@ export SimilarAuthorCard from './components/SimilarAuthorCard';
 export SimilarDocuments from './components/SimilarDocuments';
 export SmallTabs from './components/SmallTabs';
 export SpellCheckMessage from './components/SpellCheckMessage';
+export SpotfireWebPlayer from './components/SpotfireWebPlayer';
 export SqlLog from './components/SqlLog';
 export StarRating from './components/StarRating';
 export StringListEditor from './components/StringListEditor';
