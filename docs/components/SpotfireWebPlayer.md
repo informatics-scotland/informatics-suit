@@ -34,11 +34,23 @@ __4:__ SpotfireWebPlayer as a SearchResult but with filters from the Document
 
     const docs = require('../sampleData/Documents').default;
     const spotfireDoc = new SearchDocument(new Map(docs.spotfire.fields));
-    spotfireDoc.fields.set('pki.spotfire.filter.table', ['Data Table (2)']);
-    spotfireDoc.fields.set('pki.spotfire.filter.column', ['Detection Method']);
-    spotfireDoc.fields.set('pki.spotfire.filter.values', ['Tip']);
-    //spotfireDoc.fields.set('pki.spotfire.file', ['/User Demos/Gerard Conway/worldbank']);
-    //spotfireDoc.fields.set('pki.spotfire.host', ['http://crspotfire191.pkiapps.net:443/spotfire/wp/']);
+    spotfireDoc.fields.set('entities_mvs', ['{"attivioEntities":[{"type": "filter", "filterScheme": "Filtering scheme", "tableName": "Data Table (2)", "columnName": "Detection Method"}]}']);
+
+    const { StaticRouter } = require('react-router-dom');
+
+    <StaticRouter context={{}}>
+      <SearchResult document={spotfireDoc} position={1} />
+    </StaticRouter>
+```
+
+__5:__ SpotfireWebPlayer as a SearchResult but with document properties from the Document
+
+```jsx
+    const SearchDocument = require( '../../src/api/SearchDocument').default;
+
+    const docs = require('../sampleData/Documents').default;
+    const spotfireDoc = new SearchDocument(new Map(docs.spotfire.fields));
+    spotfireDoc.fields.set('entities_mvs', ['{"attivioEntities":[{"type": "property", "propertyName": "attivioTest"}]}']);
 
     const { StaticRouter } = require('react-router-dom');
 

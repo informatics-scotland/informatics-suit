@@ -1,10 +1,24 @@
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 var _class, _temp;
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+function _classCallCheck(instance, Constructor) {
+  if (!(instance instanceof Constructor)) {
+    throw new TypeError("Cannot call a class as a function");
+  }
+}
 
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+function _possibleConstructorReturn(self, call) {
+  if (!self) {
+    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+  }return call && ((typeof call === "undefined" ? "undefined" : _typeof(call)) === "object" || typeof call === "function") ? call : self;
+}
 
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+function _inherits(subClass, superClass) {
+  if (typeof superClass !== "function" && superClass !== null) {
+    throw new TypeError("Super expression must either be null or a function, not " + (typeof superClass === "undefined" ? "undefined" : _typeof(superClass)));
+  }subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } });if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+}
 
 import React from 'react';
 
@@ -21,13 +35,15 @@ function _guid() {
 
 function constructFilterString(filterObjects) {
   // TODO: check for empty array input
-  const filters = filterObjects || [{}];
+  //const filters = filterObjects || [];
 
-  const filterString = filters.reduce((acc, filter) => {
+  var filterString = filterObjects.reduce(function (acc, filter) {
     if (filter.table && filter.column && filter.values) {
-      const values = filter.values.map(value => `"${value}"`);
-      const valuesString = `{${values.join(',')}}`;
-      return `${acc}SetFilter(tableName="${filter.table}", columnName="${filter.column}", values=${valuesString});`;
+      var values = filter.values.map(function (value) {
+        return "\"" + value + "\"";
+      });
+      var valuesString = "{" + values.join(',') + "}";
+      return acc + "SetFilter(tableName=\"" + filter.table + "\", columnName=\"" + filter.column + "\", values=" + valuesString + ");";
     }
 
     return acc;
@@ -51,8 +67,9 @@ var SpotfireWebPlayer = (_temp = _class = function (_React$Component) {
       isLoaded: false,
       isInitializing: true,
       requiresLogin: false,
-      guid: props.guid || _guid()
-      // filters: props.filters || [{}],
+      guid: props.guid || _guid(),
+      documentProperties: props.documentProperties || [],
+      filters: props.filters || []
     };
 
     var parameters = constructFilterString(props.filters);
@@ -96,6 +113,16 @@ var SpotfireWebPlayer = (_temp = _class = function (_React$Component) {
   };
 
   SpotfireWebPlayer.prototype.onOpenedCallback = function onOpenedCallback() {
+    var _this2 = this;
+
+    // apply any document properties passed
+    if (this.props.documentProperties.length > 0) {
+      this.props.documentProperties.forEach(function (documentProperty) {
+
+        // set each property in order
+        _this2.app._document.setDocumentProperty(documentProperty.name, documentProperty.value);
+      });
+    }
     this.setState({ msg: '', isLoaded: true, isInitializing: false });
   };
 
@@ -128,27 +155,11 @@ var SpotfireWebPlayer = (_temp = _class = function (_React$Component) {
       spotfireStyle = { height: 480, display: 'block' };
     }
 
-    var loginLink = this.state.requiresLogin ? React.createElement(
-      'p',
-      null,
-      React.createElement(
-        'a',
-        { href: this.props.loginUrl, target: '_blank' },
-        'Sign into Spotfire and refresh this page.'
-      )
-    ) : React.createElement('span', null);
-    return React.createElement(
-      'div',
-      null,
-      React.createElement(
-        'div',
-        null,
-        this.state.msg
-      ),
-      loginLink,
-      React.createElement('p', null, constructFilterString(this.props.filters)),
-      React.createElement('div', { className: 'spotfireContainer', id: this.state.guid, style: spotfireStyle })
-    );
+    var loginLink = this.state.requiresLogin ? React.createElement('p', null, React.createElement('a', { href: this.props.loginUrl, target: '_blank' }, 'Sign into Spotfire and refresh this page.')) : React.createElement('span', null);
+    return React.createElement('div', null, React.createElement('div', null, this.state.msg), loginLink, 
+    //React.createElement('p', null, constructFilterString(this.props.filters)),
+    //React.createElement('p', null, this.props.documentProperties),
+    React.createElement('div', { className: 'spotfireContainer', id: this.state.guid, style: spotfireStyle }));
   };
 
   return SpotfireWebPlayer;
@@ -157,8 +168,8 @@ var SpotfireWebPlayer = (_temp = _class = function (_React$Component) {
   file: DEFAULT_FILE,
   loginUrl: LOGIN_URL,
   guid: '',
-  filters: [{}],
-  documentProperties: [{}]
+  filters: [],
+  documentProperties: []
 }, _temp);
 
 // TODO: move to class method?

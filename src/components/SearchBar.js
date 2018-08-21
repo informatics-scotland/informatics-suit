@@ -78,6 +78,12 @@ type SearchBarState = {
  * to use when searching. Must be inside a Searcher component.
  */
 class SearchBar extends React.Component<SearchBarDefaultProps, SearchBarProps, SearchBarState> {
+  static contextTypes = {
+    searcher: PropTypes.any,
+  };
+
+  static displayName = 'SearchBar';
+
   static defaultProps: SearchBarDefaultProps = {
     inMasthead: false,
     placeholder: 'Search\u2026',
@@ -147,7 +153,7 @@ class SearchBar extends React.Component<SearchBarDefaultProps, SearchBarProps, S
       if (e.results[0].isFinal) {
         const searcher = this.context.searcher;
         if (searcher) {
-          searcher.setQueryAndSearch(newQuery);
+          searcher.performQueryImmediately(newQuery);
         }
       }
       this.setState({
@@ -180,7 +186,7 @@ class SearchBar extends React.Component<SearchBarDefaultProps, SearchBarProps, S
     const searcher = this.context.searcher;
     if (searcher) {
       if (doSearch) {
-        searcher.setQueryAndSearch(newQuery);
+        searcher.performQueryImmediately(newQuery);
         this.route();
       } else {
         searcher.updateQuery(newQuery);
@@ -336,6 +342,7 @@ class SearchBar extends React.Component<SearchBarDefaultProps, SearchBarProps, S
           placeholder={placeholder || ''}
           value={query}
           className={inputClass}
+          style={{ minWidth: '500px' }}
         />
       ) : (
         <input
@@ -345,12 +352,13 @@ class SearchBar extends React.Component<SearchBarDefaultProps, SearchBarProps, S
           onChange={this.queryChanged}
           onKeyDown={this.doKeyPress}
           value={query}
+          style={{ minWidth: '500px' }}
         />
       );
 
     return (
       <div className={containerClass}>
-        <div className="attivio-globalmast-search" role="search">
+        <div className="attivio-globalmast-search" role="search" style={{ display: 'inline-block' }}>
           <div className="form-group">
             {inputComponent}
             {showMicrophone ? (

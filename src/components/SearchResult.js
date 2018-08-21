@@ -27,7 +27,9 @@ import RelevancyScore from './RelevancyScore';
 import DocumentEntityList from './DocumentEntityList';
 import Signals from '../api/Signals';
 
-var SUIT_TYPE_FIELD = 'pki.suit.type';
+const SUIT_TYPE_FIELD = 'pki.suit.type';
+const spotfireWidgetHome = '/Projects/Metadata Tools/Widgets/'
+
 
 /**
  * An individual search result.
@@ -386,7 +388,7 @@ var SearchResult = (_temp = _class = function (_React$Component) {
     );
   };
 
-  SearchResult.prototype.renderSpotfireResult = function renderSpotfireResult() {
+  SearchResult.prototype.renderSpotfireResult = function renderSpotfireResult(spotfireType) {
     var _this4 = this;
 
     var doc = this.props.document;
@@ -397,60 +399,85 @@ var SearchResult = (_temp = _class = function (_React$Component) {
     var spotfireProps = {};
     var host = doc.getFirstValue('pki.spotfire.host');
     var file = doc.getFirstValue('pki.spotfire.file');
-    if (host && file) {
+    if (spotfireType === "spotfire-widget"){
+        file = spotfireWidgetHome + table + " Summary";
+    }
+    if (host) {
       spotfireProps.host = host;
+    }
+    if (file) {
       spotfireProps.file = file;
     }
 
     // convert the spotfire entities field into JSON
-    var spotfireEntityFields = JSON.parse(doc.getFirstValue('entities_mvs').replace(new RegExp("\&quot;", 'g'), '"'))["attivioEntities"];
-    //const spotfireEntityFields = new Map(this.props.entityFields);
-    //spotfireEntityFields.set('pki.spotfire.file', 'File');
-    //spotfireEntityFields.set('pki.spotfire.host', 'Host');
+    var spotfireEntityFields = [];
+    if (doc.getFirstValue('entities_mvs') != ""){
+      spotfireEntityFields = JSON.parse(doc.getFirstValue('entities_mvs').replace(new RegExp("\&quot;", 'g'), '"'))["attivioEntities"];
+    }
 
-    var filtersFound = "Filters (" + spotfireEntityFields[0].type + "): ";
-    var entitiesFound = "Entities: ";
     // create array of filters
     var filters = [];
+    var documentProperties = [];
 
     // compare attivio entity fields with Spotfire entities to find matching filters
     if (spotfireEntityFields.length > 0){
       spotfireEntityFields.forEach((spotfireEntity) => {
-        // check entity type as we want filters only
-        if (spotfireEntity.type === "filter") {
-          filtersFound += spotfireEntity.columnName + ", ";
-          // check attivio entities for a match
-          var keyName = spotfireEntity.columnName.replace("attivio_", "");
 
-          this.props.entityFields.forEach(function (fieldLabel, fieldName) {
-            // if we have a match on name - the spotfire tool can be filtered by this entity
-            if (fieldLabel === keyName){
-              entitiesFound += spotfireEntity.columnName + '|' + fieldLabel;
-              // make the filter obkect and push it into the filters array
-              filters.push({
-                scheme: spotfireEntity.filterScheme,
-                table: spotfireEntity.tableName,
-                column: spotfireEntity.columnName,
-                values: ['River Tay'],
-              });
-            }
-          }, spotfireEntity);
+        // extract value to pass based upon Spotfire type
+        let spotfireValues= [];
+        if (spotfireType === "spotfire"){
+          spotfireValues.push('river tay');
+        }
+        else if (spotfireType == "spotfire-widget"){
+          spotfireValues.push(docId);
+        }
+
+        // check entity type
+        if (spotfireEntity.type === "filter") {
+
+          if (spotfireType === "spotfire"){
+
+            // check attivio entities for a match
+            var keyName = spotfireEntity.columnName.replace("attivio_", "");
+
+            this.props.entityFields.forEach(function (fieldLabel, fieldName) {
+              // if we have a match on name - the spotfire tool can be filtered by this entity
+              if (fieldLabel === keyName){
+
+                // make the filter object and push it into the filters array
+                filters.push({
+                  scheme: spotfireEntity.filterScheme,
+                  table: spotfireEntity.tableName,
+                  column: spotfireEntity.columnName,
+                  values: spotfireValues,
+                });
+              }
+            }, spotfireEntity);
+          }
+          else if (spotfireType === "spotfire-widget"){
+            // make the filter object and push it into the filters array
+            filters.push({
+              scheme: spotfireEntity.filterScheme,
+              table: spotfireEntity.tableName,
+              column: spotfireEntity.columnName,
+              values: spotfireValues,
+            }); 
+          }
+        }
+        else if (spotfireEntity.type === "property"){
+
+          // add property to array of properties that can be applied
+          documentProperties.push({
+            name: spotfireEntity.propertyName,
+            value: spotfireValues[0]
+          })
         }
       });
     }
 
-    var filter = {
-      table: doc.getFirstValue('pki.spotfire.filter.table'),
-      column: doc.getFirstValue('pki.spotfire.filter.column'),
-      values: [doc.getFirstValue('pki.spotfire.filter.values')]
-    };
-
-    if (!filter.table || !filter.column) {
-      filter = {};
-    }
     spotfireProps.filters = filters;
+    spotfireProps.documentProperties = documentProperties;
 
-    // <DocumentEntityList doc={doc} entityFields={spotfireEntityFields} />
     return React.createElement(
       'div',
       { className: 'attivio-search-result row' },
@@ -465,17 +492,7 @@ var SearchResult = (_temp = _class = function (_React$Component) {
         React.createElement(
           'div',
           { style: { float: 'left' } },
-          React.createElement(SearchResultTitle, { doc: doc, baseUri: this.props.baseUri }),
-          React.createElement(
-            'p',
-            null,
-            filtersFound
-          ),
-          React.createElement(
-            'p',
-            null,
-            entitiesFound
-          )
+          React.createElement(SearchResultTitle, { doc: doc, baseUri: this.props.baseUri })
         ),
         React.createElement(
           'div',
@@ -512,8 +529,8 @@ var SearchResult = (_temp = _class = function (_React$Component) {
   };
 
   SearchResult.prototype.render = function render() {
-    if (this.props.document.getFirstValue(SUIT_TYPE_FIELD) === 'spotfire') {
-      return this.renderSpotfireResult();
+    if (this.props.document.getFirstValue(SUIT_TYPE_FIELD).substring(0,8) === 'spotfire') {
+      return this.renderSpotfireResult(this.props.document.getFirstValue(SUIT_TYPE_FIELD));
     }
 
     switch (this.props.format) {

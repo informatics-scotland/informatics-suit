@@ -2411,7 +2411,7 @@ const docWithChildren = new SearchDocument(fieldsCopy);
 docWithChildren.children = documents.slice(0, 9);
 const spotfireFields = fieldsCopy;
 spotfireFields.set('pki.suit.type', ['spotfire']);
-spotfireFields.set('table', ['spotfire']);
+spotfireFields.set('table', ['Spotfire']);
 const spotfireDoc = new SearchDocument(spotfireFields);
 
 const sampleDocs = {
