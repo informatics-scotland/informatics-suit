@@ -19,16 +19,14 @@ export default class DocumentEntityList extends React.Component<void, DocumentEn
 
   getEntityValues(doc: SearchDocument): Array<DataPairInfo> {
     const result = [];
-    if (this.props.entityFields && this.props.entityFields.length > 0){
-      this.props.entityFields.forEach((fieldLabel: string, fieldName: string) => {
-        const values = doc.getAllValues(fieldName);
-        if (values && values.length > 0) {
-          const valueString = values.join(', ');
-          const dataPair = new DataPairInfo(fieldLabel, valueString, fieldName);
-          result.push(dataPair);
-        }
-      });
-    }
+    this.props.entityFields.forEach((fieldLabel: string, fieldName: string) => {
+      const values = doc.getAllValues(fieldName);
+      if (values && values.length > 0) {
+        const valueString = values.join(', ');
+        const dataPair = new DataPairInfo(fieldLabel, valueString, fieldName);
+        result.push(dataPair);
+      }
+    });
     return result;
   }
 

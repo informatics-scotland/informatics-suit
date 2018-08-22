@@ -1,25 +1,3 @@
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
-var _class, _temp;
-
-function _classCallCheck(instance, Constructor) {
-  if (!(instance instanceof Constructor)) {
-    throw new TypeError("Cannot call a class as a function");
-  }
-}
-
-function _possibleConstructorReturn(self, call) {
-  if (!self) {
-    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
-  }return call && ((typeof call === "undefined" ? "undefined" : _typeof(call)) === "object" || typeof call === "function") ? call : self;
-}
-
-function _inherits(subClass, superClass) {
-  if (typeof superClass !== "function" && superClass !== null) {
-    throw new TypeError("Super expression must either be null or a function, not " + (typeof superClass === "undefined" ? "undefined" : _typeof(superClass)));
-  }subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } });if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
-}
-
 import React from 'react';
 
 var LOGIN_URL = 'http://sepa-app-spl01/';
@@ -34,16 +12,16 @@ function _guid() {
 }
 
 function constructFilterString(filterObjects) {
-  // TODO: check for empty array input
-  //const filters = filterObjects || [];
 
-  var filterString = filterObjects.reduce(function (acc, filter) {
+  const filterString = filterObjects.reduce(function (acc, filter) {
     if (filter.table && filter.column && filter.values) {
-      var values = filter.values.map(function (value) {
-        return "\"" + value + "\"";
-      });
-      var valuesString = "{" + values.join(',') + "}";
-      return acc + "SetFilter(tableName=\"" + filter.table + "\", columnName=\"" + filter.column + "\", values=" + valuesString + ");";
+        if (filter.values.length > 0){
+          const values = filter.values.map(function (value) {
+            return "\"" + value + "\"";
+          });
+          const valuesString = "{" + values.join(',') + "}";
+          return acc + "SetFilter(tableName=\"" + filter.table + "\", columnName=\"" + filter.column + "\", values=" + valuesString + ");";
+        }
     }
 
     return acc;
@@ -54,15 +32,21 @@ function constructFilterString(filterObjects) {
 /**
  * Embeds a Spotfire WebPlayer using Spotfire JS library!
  */
-var SpotfireWebPlayer = (_temp = _class = function (_React$Component) {
-  _inherits(SpotfireWebPlayer, _React$Component);
+class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
+  static displayName = 'SpotfireWebPlayer';
 
-  function SpotfireWebPlayer(props) {
-    _classCallCheck(this, SpotfireWebPlayer);
+  static defaultProps: SpotfireWebPlayerProps = {
+    host: DEFAULT_HOST,
+    file: DEFAULT_FILE,
+    loginUrl: LOGIN_URL,
+    guid: '',
+    documentProperties: [],
+    filters: []
+  };
 
-    var _this = _possibleConstructorReturn(this, _React$Component.call(this, props));
-
-    _this.state = {
+  constructor(props) {
+    super(props);
+    this.state = {
       msg: 'Initializing Spotfire Web Player...',
       isLoaded: false,
       isInitializing: true,
@@ -72,8 +56,8 @@ var SpotfireWebPlayer = (_temp = _class = function (_React$Component) {
       filters: props.filters || []
     };
 
-    var parameters = constructFilterString(props.filters);
-    var customizationInfo = new spotfire.webPlayer.Customization();
+    const parameters = constructFilterString(props.filters);
+    const customizationInfo = new spotfire.webPlayer.Customization();
     customizationInfo.showTopHeader = false;
     customizationInfo.showToolBar = false;
     customizationInfo.showExportFile = true;
@@ -93,26 +77,25 @@ var SpotfireWebPlayer = (_temp = _class = function (_React$Component) {
     customizationInfo.showUndoRedo = false;
     customizationInfo.showAnalysisInfo = false;
 
-    var app = new spotfire.webPlayer.Application(props.host, customizationInfo, props.file, parameters);
+    const app = new spotfire.webPlayer.Application(props.host, customizationInfo, props.file, parameters);
 
-    app.onError(_this.errorCallback.bind(_this));
-    app.onClosed(_this.onClosedCallback.bind(_this));
-    app.onOpened(_this.onOpenedCallback.bind(_this));
-    _this.app = app;
-    return _this;
+    app.onError(this.errorCallback.bind(this));
+    app.onClosed(this.onClosedCallback.bind(this));
+    app.onOpened(this.onOpenedCallback.bind(this));
+    this.app = app;
   }
 
-  SpotfireWebPlayer.prototype.componentDidMount = function componentDidMount() {
+  componentDidMount() {
     this.app.openDocument(this.state.guid);
-  };
+  }
 
-  SpotfireWebPlayer.prototype.componentWillUnmount = function componentWillUnmount() {
+  componentWillUnmount() {
     if (this.app) {
       this.app.close();
     }
-  };
+  }
 
-  SpotfireWebPlayer.prototype.onOpenedCallback = function onOpenedCallback() {
+  onOpenedCallback() {
     var _this2 = this;
 
     // apply any document properties passed
@@ -124,15 +107,15 @@ var SpotfireWebPlayer = (_temp = _class = function (_React$Component) {
       });
     }
     this.setState({ msg: '', isLoaded: true, isInitializing: false });
-  };
+  }
 
-  SpotfireWebPlayer.prototype.onClosedCallback = function onClosedCallback(path) {
-    this.setState({ msg: 'Document at path "' + path + '" closed.', isLoaded: false });
-  };
+  onClosedCallback(path) {
+    this.setState({ msg: `Document at path "${path}" closed.`, isLoaded: false });
+  }
 
-  SpotfireWebPlayer.prototype.errorCallback = function errorCallback(errorCode, errorMessage) {
-    var msg = errorCode + ': ' + errorMessage;
-    var requiresLogin = false;
+  errorCallback(errorCode, errorMessage) {
+    let msg = `${errorCode}: ${errorMessage}`;
+    let requiresLogin = false;
 
     if (errorCode === spotfire.webPlayer.errorCodes.ERROROPEN) {
       // Could be a 401 issue meaning the user needs to log in
@@ -145,34 +128,28 @@ var SpotfireWebPlayer = (_temp = _class = function (_React$Component) {
       requiresLogin = false;
     }
     console.error(errorMessage);
-    this.setState({ msg: msg, isLoaded: false, isInitializing: false, requiresLogin: requiresLogin });
-  };
+    this.setState({ msg, isLoaded: false, isInitializing: false, requiresLogin });
+  }
 
-  SpotfireWebPlayer.prototype.render = function render() {
+  render() {
     var spotfireStyle = { height: 480, display: 'none' };
 
     if (this.state.isLoaded || this.state.isInitializing) {
       spotfireStyle = { height: 480, display: 'block' };
     }
 
-    var loginLink = this.state.requiresLogin ? React.createElement('p', null, React.createElement('a', { href: this.props.loginUrl, target: '_blank' }, 'Sign into Spotfire and refresh this page.')) : React.createElement('span', null);
-    return React.createElement('div', null, React.createElement('div', null, this.state.msg), loginLink, 
-    //React.createElement('p', null, constructFilterString(this.props.filters)),
-    //React.createElement('p', null, this.props.documentProperties),
-    React.createElement('div', { className: 'spotfireContainer', id: this.state.guid, style: spotfireStyle }));
-  };
-
-  return SpotfireWebPlayer;
-}(React.Component), _class.displayName = 'SpotfireWebPlayer', _class.defaultProps = {
-  host: DEFAULT_HOST,
-  file: DEFAULT_FILE,
-  loginUrl: LOGIN_URL,
-  guid: '',
-  filters: [],
-  documentProperties: []
-}, _temp);
+    const loginLink = this.state.requiresLogin ?
+      (<p><a href={this.props.loginUrl} target="_blank">Sign into Spotfire and refresh this page.</a></p>) : (<span />);
+    return (
+      <div>
+        <div>{this.state.msg}</div>
+        {loginLink}
+        <div className="spotfireContainer" id={this.state.guid} style={spotfireStyle} />
+      </div>
+    );
+  }
+}
 
 // TODO: move to class method?
-
 SpotfireWebPlayer.constructFilterString = constructFilterString;
 export default SpotfireWebPlayer;
