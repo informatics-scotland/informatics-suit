@@ -19,6 +19,7 @@ import DocumentThumbnail from './DocumentThumbnail';
 import RelevancyScore from './RelevancyScore';
 import DocumentEntityList from './DocumentEntityList';
 import Signals from '../api/Signals';
+import PropTypes from 'prop-types';
 
 const SUIT_TYPE_FIELD = 'pki.suit.type';
 const spotfireWidgetHome = '/Projects/Metadata Tools/Widgets/'
@@ -88,6 +89,10 @@ export default class SearchResult extends React.Component<SearchResultDefaultPro
     showRatings: true,
   };
 
+  static contextTypes = {
+    searcher: PropTypes.any,
+  };
+
   static displayName = 'SearchResult';
 
   static getFirstDocumentType(list: Array<SearchDocument>): string {
@@ -114,6 +119,7 @@ export default class SearchResult extends React.Component<SearchResultDefaultPro
     this.state = {
       currentTab: SearchResult.getFirstDocumentType(props.document.children),
     };
+
     (this: any).tabChanged = this.tabChanged.bind(this);
     (this: any).rateDocument = this.rateDocument.bind(this);
   }
@@ -333,47 +339,59 @@ export default class SearchResult extends React.Component<SearchResultDefaultPro
   }
 
   renderSpotfireResult(spotfireType) {
+
+    const searcher = this.context.searcher;
     const doc = this.props.document;
     const docId = doc.getFirstValue('.id');
     const table = doc.getFirstValue(FieldNames.TABLE);
     const docTags = doc.getAllValues('tags');
+    const startUpProperty = "attivioRunOnOpen";
 
+    // set properties to be used by this function but also to pass tot he SpotfireWebPlayer react component
     const spotfireProps = {}
     let host = doc.getFirstValue('pki.spotfire.host');
     let file = doc.getFirstValue('pki.spotfire.file');
 
-    var show360Link = false;
+    // do you wan to show the document entities panel beside the Spotfire widget - comes from field property
+    let showEntitiesProperty = doc.getFirstValue('pki.spotfire.show.entities');
+    let showEntities = false;
+    if (showEntitiesProperty.toLowerCase() === "yes" || showEntitiesProperty.toLowerCase() === "true"){
+      showEntities = true;
+    }
+
+    // whether to show the 360 link or not..
+    let show360Link = null;
     if (spotfireType === "spotfire-widget"){
         file = spotfireWidgetHome + table + " Summary";
-        show360Link = true;
+        show360Link = "Show 360° View";
     }
     if (host) {
       spotfireProps.host = host;
     }
     if (file) {
       spotfireProps.file = file;
-    }
+    }  
 
     // convert the spotfire entities field into JSON
     let spotfireEntityFields = [];
-    if (doc.getFirstValue('entities_mvs') != ""){
-      spotfireEntityFields = JSON.parse(doc.getFirstValue('entities_mvs').replace(new RegExp("\&quot;", 'g'), '"'))["attivioEntities"];
+    if (doc.getFirstValue('spotfire_entities') != ""){
+      spotfireEntityFields = JSON.parse(doc.getFirstValue('spotfire_entities').replace(new RegExp("\&quot;", 'g'), '"'))["attivioEntities"];
     }
 
     // create array of filters
     var filters = [];
     var documentProperties = [];
 
+    // grab the query ran or written by query frames so we can extract entities from it
+    let query = searcher.state.query.toLowerCase();
+  
     // compare attivio entity fields with Spotfire entities to find matching filters
     if (spotfireEntityFields.length > 0){
       spotfireEntityFields.forEach((spotfireEntity) => {
 
         // extract value to pass based upon Spotfire type
         let spotfireValues= [];
-        if (spotfireType === "spotfire"){
-          //spotfireValues.push('river tay');
-        }
-        else if (spotfireType == "spotfire-widget"){
+        if (spotfireType == "spotfire-widget"){
           spotfireValues.push(docId);
         }
 
@@ -387,15 +405,24 @@ export default class SearchResult extends React.Component<SearchResultDefaultPro
 
             this.props.entityFields.forEach(function (fieldLabel, fieldName) {
               // if we have a match on name - the spotfire tool can be filtered by this entity
-              if (fieldLabel === keyName){
+              if (fieldName.toLowerCase() === keyName.toLowerCase() && query.includes(fieldName + ":")){
 
-                // make the filter object and push it into the filters array
-                filters.push({
-                  scheme: spotfireEntity.filterScheme,
-                  table: spotfireEntity.tableName,
-                  column: spotfireEntity.columnName,
-                  values: spotfireValues,
-                });
+                // get the searched for values out the query
+                let queryRegex = new RegExp(".*?" + fieldName.toLowerCase() + "\:\"([A-z0-9 \-_]+?)\".*", "gi");
+                let queryValues = query.replace(queryRegex,'$1')
+                if (queryValues){
+
+                  // add the values to the array
+                  spotfireValues.push(queryValues);
+
+                  // make the filter object and push it into the filters array
+                  filters.push({
+                    scheme: spotfireEntity.filterScheme,
+                    table: spotfireEntity.tableName,
+                    column: spotfireEntity.columnName,
+                    values: spotfireValues,
+                  });
+                }
               }
             }, spotfireEntity);
           }
@@ -411,10 +438,15 @@ export default class SearchResult extends React.Component<SearchResultDefaultPro
         }
         else if (spotfireEntity.type === "property"){
 
+          let documentPropertyValue = spotfireValues[0];
+          if (spotfireEntity.propertyName === startUpProperty){
+            documentPropertyValue = Math.random().toString();
+          }
+
           // add property to array of properties that can be applied
           documentProperties.push({
             name: spotfireEntity.propertyName,
-            value: spotfireValues[0]
+            value: documentPropertyValue
           })
         }
       });
@@ -425,28 +457,32 @@ export default class SearchResult extends React.Component<SearchResultDefaultPro
 
     return (
       <div className="attivio-search-result row">
-        <div className="attivio-search-result-col">
-          <DocumentType docType={table} position={this.props.position} />
-          <dl className="attivio-labeldata-stacked attivio-labeldata-stacked-search-results">
-            {this.props.showRatings ? (
-              <div>
-                <dt>Rating</dt>
-                <dd>
-                  <StarRating onRated={(rating) => { this.rateDocument(doc, rating); }} />
-                </dd>
-              </div>
-            ) : null}
-            {this.props.showScores ? <dt>Relevancy Score</dt> : ''}
-            {this.props.showScores ? <dd><RelevancyScore score={score} explanation={scoreDescription} id={docId} /></dd> : ''}
-          </dl>
-        </div>
         <div className="attivio-search-result-content">
-          <SearchResultTitle doc={doc} baseUri={this.props.baseUri} />
+          <div style={{ float: 'left', paddingRight: '8px' }}>
+            <DocumentType docType={table} position={this.props.position} />
+          </div>
+          <div style={{ float: 'left' }}>
+            <SearchResultTitle doc={doc} baseUri={this.props.baseUri} />
+          </div>
+          {this.props.showRatings ?  
+          <div style={{float: 'right'}}>
+            <b style={{ float: 'left', paddingRight: '8px' }}>Rating</b>
+            <div style={{ float: 'left', paddingRight: '6px' }}>
+            <StarRating onRated={(rating) => { this.rateDocument(doc, rating); }} /> 
+            </div>
+          </div>
+          : null}
+          {this.props.showScores ? <dt>Relevancy Score</dt> : ''}
+          {this.props.showScores ? <dd><RelevancyScore score={score} explanation={scoreDescription} id={docId} /></dd> : ''}
           <Row>
-            <Col xs={12} sm={12}>
+            <Col xs={showEntities ? 9 : 12} sm={showEntities ? 9 : 12}>
               <SpotfireWebPlayer {...spotfireProps} />
               <SearchResultTags tags={docTags} docId={docId} view360Label={show360Link} />
             </Col>
+            {showEntities ? <Col xs={3} sm={3}>
+              <DocumentEntityList doc={doc} entityFields={this.props.entityFields} />
+            </Col> : null
+            }
           </Row>
         </div>
       </div>
@@ -454,8 +490,12 @@ export default class SearchResult extends React.Component<SearchResultDefaultPro
   }
 
   render() {
-    if (this.props.document.getFirstValue(SUIT_TYPE_FIELD).substring(0,8) === 'spotfire') {
-      return this.renderSpotfireResult(this.props.document.getFirstValue(SUIT_TYPE_FIELD));
+
+    // if we are running debug mode - don't show spotfire 
+    if (this.props.format !== 'debug'){
+      if (this.props.document.getFirstValue(SUIT_TYPE_FIELD).substring(0,8) === 'spotfire') {
+        return this.renderSpotfireResult(this.props.document.getFirstValue(SUIT_TYPE_FIELD));
+      }
     }
 
     switch (this.props.format) {

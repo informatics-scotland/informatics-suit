@@ -47,7 +47,7 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
   constructor(props) {
     super(props);
     this.state = {
-      msg: 'Initializing Spotfire Web Player...',
+      msg: '',
       isLoaded: false,
       isInitializing: true,
       requiresLogin: false,

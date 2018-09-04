@@ -34,7 +34,7 @@ __4:__ SpotfireWebPlayer as a SearchResult but with filters from the Document
 
     const docs = require('../sampleData/Documents').default;
     const spotfireDoc = new SearchDocument(new Map(docs.spotfire.fields));
-    spotfireDoc.fields.set('entities_mvs', ['{"attivioEntities":[{"type": "filter", "filterScheme": "Filtering scheme", "tableName": "Data Table (2)", "columnName": "Detection Method"}]}']);
+    spotfireDoc.fields.set('spotfire_entities', ['{"attivioEntities":[{"type": "filter", "filterScheme": "Filtering scheme", "tableName": "Data Table (2)", "columnName": "Detection Method"}]}']);
 
     const { StaticRouter } = require('react-router-dom');
 
@@ -50,7 +50,23 @@ __5:__ SpotfireWebPlayer as a SearchResult but with document properties from the
 
     const docs = require('../sampleData/Documents').default;
     const spotfireDoc = new SearchDocument(new Map(docs.spotfire.fields));
-    spotfireDoc.fields.set('entities_mvs', ['{"attivioEntities":[{"type": "property", "propertyName": "attivioTest"}]}']);
+    spotfireDoc.fields.set('spotfire_entities', ['{"attivioEntities":[{"type": "property", "propertyName": "attivioTest"}]}']);
+
+    const { StaticRouter } = require('react-router-dom');
+
+    <StaticRouter context={{}}>
+      <SearchResult document={spotfireDoc} position={1} />
+    </StaticRouter>
+```
+
+__6:__ SpotfireWebPlayer as a SearchResult butusing the default run at start attivio document property
+
+```jsx
+    const SearchDocument = require( '../../src/api/SearchDocument').default;
+
+    const docs = require('../sampleData/Documents').default;
+    const spotfireDoc = new SearchDocument(new Map(docs.spotfire.fields));
+    spotfireDoc.fields.set('spotfire_entities', ['{"attivioEntities":[{"type": "property", "propertyName": "attivioRunOnOpen"}]}']);
 
     const { StaticRouter } = require('react-router-dom');
 

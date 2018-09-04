@@ -2412,6 +2412,7 @@ docWithChildren.children = documents.slice(0, 9);
 const spotfireFields = fieldsCopy;
 spotfireFields.set('pki.suit.type', ['spotfire']);
 spotfireFields.set('table', ['Spotfire']);
+spotfireFields.set('pki.spotfire.show.entities', ['no']);
 const spotfireDoc = new SearchDocument(spotfireFields);
 
 const sampleDocs = {
