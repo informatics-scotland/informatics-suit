@@ -21,8 +21,7 @@ import DocumentEntityList from './DocumentEntityList';
 import Signals from '../api/Signals';
 import PropTypes from 'prop-types';
 
-const SUIT_TYPE_FIELD = 'pki.suit.type';
-const spotfireWidgetHome = '/Projects/Metadata Tools/Widgets/'
+const suitTypeField = 'pki.suit.type';
 
 type SearchResultProps = {
   /**
@@ -342,15 +341,20 @@ export default class SearchResult extends React.Component<SearchResultDefaultPro
 
     const searcher = this.context.searcher;
     const doc = this.props.document;
-    const docId = doc.getFirstValue('.id');
     const table = doc.getFirstValue(FieldNames.TABLE);
     const docTags = doc.getAllValues('tags');
     const startUpProperty = "attivioRunOnOpen";
+    const suitSpotfireIdField = 'pki.spotfire.id.field';
+    const suitSpotfireHostField = 'pki.spotfire.host';
+    const suitSpotfireHostFile = 'pki.spotfire.file';
+    const spotfireWidgetHome = '/Projects/Metadata Tools/Widgets/';
+    const docId = doc.getFirstValue('.id');
+    const spotfireEntitiesField = "spotfire_entities";
 
     // set properties to be used by this function but also to pass tot he SpotfireWebPlayer react component
     const spotfireProps = {}
-    let host = doc.getFirstValue('pki.spotfire.host');
-    let file = doc.getFirstValue('pki.spotfire.file');
+    let host = doc.getFirstValue(suitSpotfireHostField);
+    let file = doc.getFirstValue(suitSpotfireHostFile);
 
     // do you wan to show the document entities panel beside the Spotfire widget - comes from field property
     let showEntitiesProperty = doc.getFirstValue('pki.spotfire.show.entities');
@@ -374,8 +378,8 @@ export default class SearchResult extends React.Component<SearchResultDefaultPro
 
     // convert the spotfire entities field into JSON
     let spotfireEntityFields = [];
-    if (doc.getFirstValue('spotfire_entities') != ""){
-      spotfireEntityFields = JSON.parse(doc.getFirstValue('spotfire_entities').replace(new RegExp("\&quot;", 'g'), '"'))["attivioEntities"];
+    if (doc.getFirstValue(spotfireEntitiesField) != ""){
+      spotfireEntityFields = JSON.parse(doc.getFirstValue(spotfireEntitiesField).replace(new RegExp("\&quot;", 'g'), '"'))["attivioEntities"];
     }
 
     // create array of filters
@@ -383,7 +387,10 @@ export default class SearchResult extends React.Component<SearchResultDefaultPro
     var documentProperties = [];
 
     // grab the query ran or written by query frames so we can extract entities from it
-    let query = searcher.state.query.toLowerCase();
+    let query = doc.signal.query.toLowerCase();
+    if (!query || query === ""){
+      query = searcher.state.query.toLowerCase();
+    }
   
     // compare attivio entity fields with Spotfire entities to find matching filters
     if (spotfireEntityFields.length > 0){
@@ -392,7 +399,12 @@ export default class SearchResult extends React.Component<SearchResultDefaultPro
         // extract value to pass based upon Spotfire type
         let spotfireValues= [];
         if (spotfireType == "spotfire-widget"){
-          spotfireValues.push(docId);
+          if (doc.getFirstValue(suitSpotfireIdField) != ""){
+            spotfireValues.push(doc.getFirstValue(doc.getFirstValue(suitSpotfireIdField)));
+          }
+          else{
+            spotfireValues.push(docId);
+          }
         }
 
         // check entity type
@@ -408,7 +420,7 @@ export default class SearchResult extends React.Component<SearchResultDefaultPro
               if (fieldName.toLowerCase() === keyName.toLowerCase() && query.includes(fieldName + ":")){
 
                 // get the searched for values out the query
-                let queryRegex = new RegExp(".*?" + fieldName.toLowerCase() + "\:\"([A-z0-9 \-_]+?)\".*", "gi");
+                let queryRegex = new RegExp(".*" + fieldName.toLowerCase() + ":or\\(\"([A-z0-9 -_]+?)\"\\).*$", "gi");
                 let queryValues = query.replace(queryRegex,'$1')
                 if (queryValues){
 
@@ -493,8 +505,8 @@ export default class SearchResult extends React.Component<SearchResultDefaultPro
 
     // if we are running debug mode - don't show spotfire 
     if (this.props.format !== 'debug'){
-      if (this.props.document.getFirstValue(SUIT_TYPE_FIELD).substring(0,8) === 'spotfire') {
-        return this.renderSpotfireResult(this.props.document.getFirstValue(SUIT_TYPE_FIELD));
+      if (this.props.document.getFirstValue(suitTypeField).substring(0,8) === 'spotfire') {
+        return this.renderSpotfireResult(this.props.document.getFirstValue(suitTypeField));
       }
     }
 
