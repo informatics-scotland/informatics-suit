@@ -387,9 +387,9 @@ export default class SearchResult extends React.Component<SearchResultDefaultPro
     var documentProperties = [];
 
     // grab the query ran or written by query frames so we can extract entities from it
-    let query = doc.signal.query.toLowerCase();
+    let query = doc.signal.query;
     if (!query || query === ""){
-      query = searcher.state.query.toLowerCase();
+      query = searcher.state.query;
     }
   
     // compare attivio entity fields with Spotfire entities to find matching filters
@@ -407,28 +407,35 @@ export default class SearchResult extends React.Component<SearchResultDefaultPro
           }
         }
 
-        // check entity type
-        if (spotfireEntity.type === "filter") {
+        if (spotfireType === "spotfire"){
 
-          if (spotfireType === "spotfire"){
+          // check attivio entities for a match
+          let fieldNameRegex = new RegExp("attivio_?", "gi");
 
-            // check attivio entities for a match
-            var keyName = spotfireEntity.columnName.replace("attivio_", "");
+          let keyName = spotfireEntity.columnName;
+          if (spotfireEntity.type === "property"){
+            keyName = spotfireEntity.propertyName;
+          }
+        
+          // remove attivo prefix from key
+          keyName = keyName.replace(fieldNameRegex, "");
 
-            this.props.entityFields.forEach(function (fieldLabel, fieldName) {
-              // if we have a match on name - the spotfire tool can be filtered by this entity
-              if (fieldName.toLowerCase() === keyName.toLowerCase() && query.includes(fieldName + ":")){
+          this.props.entityFields.forEach(function (fieldLabel, fieldName) {
+            // if we have a match on name - the spotfire tool can be filtered by this entity
+            if (fieldName.toLowerCase() === keyName.toLowerCase() && query.includes(fieldName + ":")){
 
-                // set the regex for getting the searched for values out the query frame
-                let queryRegex = new RegExp(".*" + fieldName.toLowerCase() + ":or\\(\"([A-z0-9 -_]+?)\"\\).*$", "gi");
-                // this handle queries in the form of entity:value
-                let queryRegex2 = new RegExp(".*" + fieldName.toLowerCase() + ":([A-z0-9 -_]+?)", "gi");
-                // get the values out
-                let queryValues = query.replace(queryRegex,'$1').replace(queryRegex2, '$1');
-                if (queryValues){
+              // set the regex for getting the searched for values out the query frame
+              let queryRegex = new RegExp(".*" + fieldName.toLowerCase() + ":or\\(\"([A-z0-9 -_]+?)\"\\).*$", "gi");
+              // this handle queries in the form of entity:value
+              let queryRegex2 = new RegExp(".*" + fieldName.toLowerCase() + ":([A-z0-9 -_]+?)", "gi");
+              // get the values out
+              let queryValues = query.replace(queryRegex,'$1').replace(queryRegex2, '$1');
+              if (queryValues){
 
-                  // add the values to the array
-                  spotfireValues.push(queryValues);
+                if (spotfireEntity.type === "filter"){
+
+                // add the values to the array
+                spotfireValues.push(queryValues.toLowerCase());
 
                   // make the filter object and push it into the filters array
                   filters.push({
@@ -438,29 +445,30 @@ export default class SearchResult extends React.Component<SearchResultDefaultPro
                     values: spotfireValues,
                   });
                 }
-              }
-            }, spotfireEntity);
-          }
-          else if (spotfireType === "spotfire-widget"){
-            // make the filter object and push it into the filters array
-            filters.push({
-              scheme: spotfireEntity.filterScheme,
-              table: spotfireEntity.tableName,
-              column: spotfireEntity.columnName,
-              values: spotfireValues,
-            }); 
-          }
-        }
-        else if (spotfireEntity.type === "property"){
+                else if (spotfireEntity.type === "property"){
 
-          let documentPropertyValue = spotfireValues[0];
-          if (spotfireEntity.propertyName !== startUpProperty){
-            documentProperties.push({
-              name: spotfireEntity.propertyName,
-              value: documentPropertyValue
-            })
-          }
+                  let documentPropertyValue = queryValues;
+                  if (spotfireEntity.propertyName !== startUpProperty){
+                    documentProperties.push({
+                      name: spotfireEntity.propertyName,
+                      value: documentPropertyValue
+                    })
+                  }
+                }
+              }
+            }
+          }, spotfireEntity);
         }
+        else if (spotfireType === "spotfire-widget"){
+          // make the filter object and push it into the filters array
+          filters.push({
+            scheme: spotfireEntity.filterScheme,
+            table: spotfireEntity.tableName,
+            column: spotfireEntity.columnName,
+            values: spotfireValues,
+          }); 
+        }
+        
       });
     }
 
