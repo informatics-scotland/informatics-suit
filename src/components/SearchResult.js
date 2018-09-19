@@ -419,9 +419,12 @@ export default class SearchResult extends React.Component<SearchResultDefaultPro
               // if we have a match on name - the spotfire tool can be filtered by this entity
               if (fieldName.toLowerCase() === keyName.toLowerCase() && query.includes(fieldName + ":")){
 
-                // get the searched for values out the query
+                // set the regex for getting the searched for values out the query frame
                 let queryRegex = new RegExp(".*" + fieldName.toLowerCase() + ":or\\(\"([A-z0-9 -_]+?)\"\\).*$", "gi");
-                let queryValues = query.replace(queryRegex,'$1')
+                // this handle queries in the form of entity:value
+                let queryRegex2 = new RegExp(".*" + fieldName.toLowerCase() + ":([A-z0-9 -_]+?)", "gi");
+                // get the values out
+                let queryValues = query.replace(queryRegex,'$1').replace(queryRegex2, '$1');
                 if (queryValues){
 
                   // add the values to the array
@@ -451,15 +454,12 @@ export default class SearchResult extends React.Component<SearchResultDefaultPro
         else if (spotfireEntity.type === "property"){
 
           let documentPropertyValue = spotfireValues[0];
-          if (spotfireEntity.propertyName === startUpProperty){
-            documentPropertyValue = Math.random().toString();
+          if (spotfireEntity.propertyName !== startUpProperty){
+            documentProperties.push({
+              name: spotfireEntity.propertyName,
+              value: documentPropertyValue
+            })
           }
-
-          // add property to array of properties that can be applied
-          documentProperties.push({
-            name: spotfireEntity.propertyName,
-            value: documentPropertyValue
-          })
         }
       });
     }

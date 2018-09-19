@@ -3,6 +3,25 @@ import React from 'react';
 var LOGIN_URL = 'http://sepa-app-spl01/';
 var DEFAULT_HOST = 'http://sepa-app-spl01/spotfire/wp/';
 var DEFAULT_FILE = '/Projects/Data Visualisation Course/Examples';
+const customizationInfo = new spotfire.webPlayer.Customization();
+customizationInfo.showTopHeader = false;
+customizationInfo.showToolBar = false;
+customizationInfo.showExportFile = true;
+customizationInfo.showExportVisualization = true;
+customizationInfo.showCustomizableHeader = false;
+customizationInfo.showPageNavigation = false;
+customizationInfo.showStatusBar = false;
+customizationInfo.showDodPanel = false;
+customizationInfo.showFilterPanel = false;
+customizationInfo.showAbout = false;
+customizationInfo.showAnalysisInformationTool = false;
+customizationInfo.showAuthor = false;
+customizationInfo.showClose = true;
+customizationInfo.showHelp = true;
+customizationInfo.showLogout = false;
+customizationInfo.showReloadAnalysis = false;
+customizationInfo.showUndoRedo = false;
+customizationInfo.showAnalysisInfo = false;
 
 function _guid() {
   function f() {
@@ -33,6 +52,7 @@ function constructFilterString(filterObjects) {
  * Embeds a Spotfire WebPlayer using Spotfire JS library!
  */
 class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
+
   static displayName = 'SpotfireWebPlayer';
 
   static defaultProps: SpotfireWebPlayerProps = {
@@ -56,27 +76,7 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
       filters: props.filters || []
     };
 
-    const parameters = constructFilterString(props.filters);
-    const customizationInfo = new spotfire.webPlayer.Customization();
-    customizationInfo.showTopHeader = false;
-    customizationInfo.showToolBar = false;
-    customizationInfo.showExportFile = true;
-    customizationInfo.showExportVisualization = true;
-    customizationInfo.showCustomizableHeader = false;
-    customizationInfo.showPageNavigation = false;
-    customizationInfo.showStatusBar = false;
-    customizationInfo.showDodPanel = false;
-    customizationInfo.showFilterPanel = false;
-    customizationInfo.showAbout = false;
-    customizationInfo.showAnalysisInformationTool = false;
-    customizationInfo.showAuthor = false;
-    customizationInfo.showClose = true;
-    customizationInfo.showHelp = true;
-    customizationInfo.showLogout = false;
-    customizationInfo.showReloadAnalysis = false;
-    customizationInfo.showUndoRedo = false;
-    customizationInfo.showAnalysisInfo = false;
-
+    const parameters = "initialLoad = False; attivioRunOnOpen = '" + Math.random().toString() + "'; " + constructFilterString(props.filters);
     const app = new spotfire.webPlayer.Application(props.host, customizationInfo, props.file, parameters);
 
     app.onError(this.errorCallback.bind(this));
@@ -91,7 +91,7 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
 
   componentWillUnmount() {
     if (this.app) {
-      this.app.close();
+      //this.app.close();
     }
   }
 
@@ -133,10 +133,10 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
 
   render() {
     var spotfireStyle = { height: 480, display: 'none' };
-
     if (this.state.isLoaded || this.state.isInitializing) {
       spotfireStyle = { height: 480, display: 'block' };
     }
+
 
     const loginLink = this.state.requiresLogin ?
       (<p><a href={this.props.loginUrl} target="_blank">Sign into Spotfire and refresh this page.</a></p>) : (<span />);
