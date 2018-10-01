@@ -425,7 +425,7 @@ export default class SearchResult extends React.Component<SearchResultDefaultPro
             if (fieldName.toLowerCase() === keyName.toLowerCase() && query.includes(fieldName + ":")){
 
               // set the regex for getting the searched for values out the query frame
-              let queryRegex = new RegExp(".*" + fieldName.toLowerCase() + ":or\\(\"([A-z0-9 -_]+?)\"\\).*$", "gi");
+              let queryRegex = new RegExp(".*" + fieldName.toLowerCase() + ":or\\(\"?([A-z0-9 -_]+?)\"?\\).*$", "gi");
               // this handle queries in the form of entity:value
               let queryRegex2 = new RegExp(".*" + fieldName.toLowerCase() + ":([A-z0-9 -_]+?)", "gi");
               // get the values out

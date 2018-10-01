@@ -3,6 +3,7 @@ import React from 'react';
 var LOGIN_URL = 'http://sepa-app-spl01/';
 var DEFAULT_HOST = 'http://sepa-app-spl01/spotfire/wp/';
 var DEFAULT_FILE = '/Projects/Data Visualisation Course/Examples';
+const startUpProperty = "attivioRunOnOpen";
 const customizationInfo = new spotfire.webPlayer.Customization();
 customizationInfo.showTopHeader = false;
 customizationInfo.showToolBar = false;
@@ -76,7 +77,7 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
       filters: props.filters || []
     };
 
-    const parameters = "initialLoad = False; attivioRunOnOpen = '" + Math.random().toString() + "'; " + constructFilterString(props.filters);
+    const parameters = "initialLoad = False; " + startUpProperty + " = '" + Math.random().toString() + "'; " + constructFilterString(props.filters);
     const app = new spotfire.webPlayer.Application(props.host, customizationInfo, props.file, parameters);
 
     app.onError(this.errorCallback.bind(this));
@@ -89,21 +90,69 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
     this.app.openDocument(this.state.guid);
   }
 
+  shouldComponentUpdate(nextProps){
+
+    if (this.state.isLoaded !== true){
+      return false;
+    }
+
+    const filtersHaveChanged = this.props.filters != nextProps.filters;
+    const propertiesHaveChanged = this.props.documentProperties != nextProps.documentProperties
+
+    // have any filters changed?
+    if (filtersHaveChanged){
+
+      // loop filters
+      nextProps.filters.forEach(filter =>
+      {
+
+        // set up a filter object with the new values
+        let thisFilter = {
+					filteringSchemeName: filter.scheme,
+					dataTableName: filter.table,
+					dataColumnName: filter.column,
+					filteringOperation: spotfire.webPlayer.filteringOperation.REPLACE,
+					filterSettings: {
+						includeEmpty: false,
+						values: filter.values
+          }
+        };
+        
+        // set the filter
+        this.app._document.filtering.setFilter(thisFilter, spotfire.webPlayer.filteringOperation.REPLACE);
+        // change the run on open to trigger any filter actions required such as zoom map
+        this.app._document.setDocumentProperty(startUpProperty, Math.random().toString());
+      });
+    }
+
+    // have any properties changed?
+    if (propertiesHaveChanged){
+
+      nextProps.documentProperties.forEach(documentProperty => 
+      {
+        this.app._document.setDocumentProperty(documentProperty.name, documentProperty.value);
+      });
+      
+    }
+
+    return filtersHaveChanged || propertiesHaveChanged;
+    
+  }
+
   componentWillUnmount() {
     if (this.app) {
-      //this.app.close();
+      this.app.close();
     }
   }
 
   onOpenedCallback() {
-    var _this2 = this;
 
     // apply any document properties passed
     if (this.props.documentProperties.length > 0) {
-      this.props.documentProperties.forEach(function (documentProperty) {
+      this.props.documentProperties.forEach(documentProperty => {
 
         // set each property in order
-        _this2.app._document.setDocumentProperty(documentProperty.name, documentProperty.value);
+        this.app._document.setDocumentProperty(documentProperty.name, documentProperty.value);
       });
     }
     this.setState({ msg: '', isLoaded: true, isInitializing: false });
@@ -136,8 +185,6 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
     if (this.state.isLoaded || this.state.isInitializing) {
       spotfireStyle = { height: 480, display: 'block' };
     }
-
-
     const loginLink = this.state.requiresLogin ?
       (<p><a href={this.props.loginUrl} target="_blank">Sign into Spotfire and refresh this page.</a></p>) : (<span />);
     return (
