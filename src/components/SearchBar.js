@@ -9,6 +9,7 @@ import MenuItem from 'react-bootstrap/lib/MenuItem';
 
 import Configurable from './Configurable';
 import AutoCompleteInput from './AutoCompleteInput';
+import SearchProfilePicker from './SearchProfilePicker';
 
 declare var webkitSpeechRecognition: any; // Prevent complaints about this not existing
 
@@ -31,6 +32,11 @@ type SearchBarProps = {
    * Defaults to true.
    */
   allowLanguageSelect: boolean;
+    /**
+   * Whether to show a menu for selecting the search profile to be applied
+   * Defaults to true.
+   */
+  allowProfileSelect: boolean;
   /**
    * If set, the microphone button is displayed in the search field and the
    * user can use speech recognition to input the query terms. This functionality
@@ -61,6 +67,7 @@ type SearchBarDefaultProps = {
   placeholder: string;
   placeholderAdvanced: string;
   allowLanguageSelect: boolean;
+  allowProfileSelect: boolean;
   allowVoice: boolean;
   buttonLabel: string;
   autoCompleteUri: string | null;
@@ -90,6 +97,7 @@ class SearchBar extends React.Component<SearchBarDefaultProps, SearchBarProps, S
     placeholderAdvanced: 'Enter an advanced query\u2026',
     buttonLabel: 'Go',
     allowLanguageSelect: true,
+    allowProfileSelect: true,
     allowVoice: false,
     autoCompleteUri: null,
     route: null,
@@ -378,6 +386,7 @@ class SearchBar extends React.Component<SearchBarDefaultProps, SearchBarProps, S
           {suggestionList}
         </div>
         {languageControl}
+        { this.props.allowProfileSelect ? (<SearchProfilePicker right={true}/>) : '' }
       </div>
     );
   }

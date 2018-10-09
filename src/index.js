@@ -104,6 +104,7 @@ export SearchButton from './components/SearchButton';
 export SearchDebugToggle from './components/SearchDebugToggle';
 export SearchInputField from './components/SearchInputField';
 export SearchLanguagePicker from './components/SearchLanguagePicker';
+export SearchProfilePicker from './components/SearchProfilePicker';
 export SearchRelevancyModel from './components/SearchRelevancyModel';
 export SearchResult from './components/SearchResult';
 export SearchResultBody from './components/SearchResultBody';

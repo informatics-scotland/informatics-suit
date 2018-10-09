@@ -68,6 +68,7 @@ module.exports = {
               'src/components/Searcher.js',
               'src/components/SearchInputField.js',
               'src/components/SearchLanguagePicker.js',
+              'src/components/SearchProfilePicker.js',
               'src/components/SearchResultsPager.js',
               'src/components/SearchResultsPerPage.js',
             ];

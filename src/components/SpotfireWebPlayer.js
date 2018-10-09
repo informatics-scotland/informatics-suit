@@ -96,12 +96,28 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
       return false;
     }
 
-    const filtersHaveChanged = this.props.filters != nextProps.filters;
-    const propertiesHaveChanged = this.props.documentProperties != nextProps.documentProperties
+    const filtersHaveChanged = JSON.stringify(this.props.filters) !== JSON.stringify(nextProps.filters);
+    const propertiesHaveChanged = JSON.stringify(this.props.documentProperties) !== JSON.stringify(nextProps.documentProperties);
 
     // have any filters changed?
     if (filtersHaveChanged){
 
+      // first clear existing filters
+      var thisWebPlayer = this.app._document;
+      thisWebPlayer.filtering.getAllModifiedFilterColumns(spotfire.webPlayer.includedFilterSettings.NONE, function(filterColumns){ 
+        if (filterColumns && filterColumns.length > 0){
+          filterColumns.forEach(filter => {
+            // check it is an attivio column (as we don't want to clear other filters)
+            if (filter.dataColumnName.substring(0, 8) === "attivio_"){
+              filter.filterSettings = {
+                includeEmpty: true
+              }
+              filter.filteringOperation = spotfire.webPlayer.filteringOperation.RESET;
+              thisWebPlayer.filtering.setFilter(filter, spotfire.webPlayer.filteringOperation.RESET);
+            }
+          });
+        }
+      });
       // loop filters
       nextProps.filters.forEach(filter =>
       {
@@ -117,7 +133,7 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
 						values: filter.values
           }
         };
-        
+
         // set the filter
         this.app._document.filtering.setFilter(thisFilter, spotfire.webPlayer.filteringOperation.REPLACE);
         // change the run on open to trigger any filter actions required such as zoom map

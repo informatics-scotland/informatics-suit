@@ -192,6 +192,7 @@ type SearcherState = {
   error?: string;
   query: string;
   queryLanguage: 'advanced' | 'simple';
+  businessCenterProfile: string;
   sort: Array<string>,
   relevancyModels: Array<string>;
   facetFilters: Array<FacetFilter>;
@@ -377,6 +378,7 @@ class Searcher extends React.Component<SearcherDefaultProps, SearcherProps, Sear
       error: undefined,
       query: Searcher.EVERYTHING,
       queryLanguage: this.props.defaultQueryLanguage,
+      businessCenterProfile: this.props.businessCenterProfile,
       sort: ['.score:DESC'],
       relevancyModels: this.props.relevancyModels,
       facetFilters: [],
@@ -434,8 +436,8 @@ class Searcher extends React.Component<SearcherDefaultProps, SearcherProps, Sear
       restParams.set('facet.ffcount', [this.props.facetFinderCount.toString(10)]);
     }
     restParams.set('join.rollup', [this.props.joinRollupMode]);
-    if (this.props.businessCenterProfile) {
-      const profiles = [this.props.businessCenterProfile];
+    if (this.state.businessCenterProfile) {
+      const profiles = [this.state.businessCenterProfile];
       restParams.set('abc.enabled', ['true']);
       restParams.set('searchProfile', profiles);
     }
@@ -501,6 +503,9 @@ class Searcher extends React.Component<SearcherDefaultProps, SearcherProps, Sear
     }
     if (state.queryLanguage !== this.props.defaultQueryLanguage) {
       basicState.queryLanguage = state.queryLanguage;
+    }
+    if (state.businessCenterProfile !== this.props.businessCenterProfile) {
+      basicState.businessCenterProfile = state.businessCenterProfile;
     }
     if (state.geoFilters && state.geoFilters.length > 0) {
       basicState.geoFilters = state.geoFilters;
@@ -633,9 +638,15 @@ class Searcher extends React.Component<SearcherDefaultProps, SearcherProps, Sear
       relevancyModels = [];
     }
 
-    // LJV TODO
     // Get the business center profile to use.
     // DEFAULT: none
+    let businessCenterProfile;
+    if (parsed.businessCenterProfile) {
+      businessCenterProfile = parsed.businessCenterProfile;
+    }
+    if (!sort) {
+      businessCenterProfile = null;
+    }
 
     // Get the format.
     // DEFAULT: this.props.format
@@ -648,6 +659,7 @@ class Searcher extends React.Component<SearcherDefaultProps, SearcherProps, Sear
     const result: SearcherState = {
       query,
       queryLanguage,
+      businessCenterProfile,
       geoFilters,
       resultsPerPage,
       resultsOffset,
@@ -820,6 +832,19 @@ class Searcher extends React.Component<SearcherDefaultProps, SearcherProps, Sear
     if (queryLanguage !== this.state.queryLanguage) {
       this.updateStateResetAndSearch({
         queryLanguage,
+      });
+    }
+  }
+
+   /**
+   * Set which search profile to use
+   * used to perform the search.
+   * This causes subsequent searches to be reset.
+   */
+  updateQueryProfile(queryProfile: string) {
+    if (queryProfile !== this.state.businessCenterProfile) {
+      this.updateStateResetAndSearch({
+        businessCenterProfile: queryProfile
       });
     }
   }
