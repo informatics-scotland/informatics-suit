@@ -17,7 +17,7 @@ customizationInfo.showFilterPanel = false;
 customizationInfo.showAbout = false;
 customizationInfo.showAnalysisInformationTool = false;
 customizationInfo.showAuthor = false;
-customizationInfo.showClose = true;
+customizationInfo.showClose = false;
 customizationInfo.showHelp = true;
 customizationInfo.showLogout = false;
 customizationInfo.showReloadAnalysis = false;
@@ -105,21 +105,6 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
       // build array of filters to alter
       var filtersToModify = new Map();
 
-      // first clear existing filters
-      this.app._document.filtering.getAllModifiedFilterColumns(spotfire.webPlayer.includedFilterSettings.NONE, function(filterColumns){ 
-        if (filterColumns && filterColumns.length > 0){
-          filterColumns.forEach(filter => {
-            // check it is an attivio column (as we don't want to clear other filters)
-            if (filter.dataColumnName.substring(0, 8) === "attivio_"){
-              filter.filterSettings = {
-                includeEmpty: true
-              }
-              filter.filteringOperation = spotfire.webPlayer.filteringOperation.RESET;
-              filtersToModify.set(filter.dataColumnName, filter);
-            }
-          });
-        }
-      });
       // loop filters and apply
       nextProps.filters.forEach(filter =>
       {
@@ -139,26 +124,44 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
         filtersToModify.set(spotfireFilter.dataColumnName,spotfireFilter);
       });
 
-      for (var newFilter of filtersToModify.values()) {
-          this.app._document.filtering.setFilter(newFilter, spotfire.webPlayer.filteringOperation.REPLACE);
-      };
+      // first clear existing filters
+      var spotfireWebPlayer = this.app._document;
+      spotfireWebPlayer.filtering.getAllModifiedFilterColumns(spotfire.webPlayer.includedFilterSettings.NONE, function(filterColumns){ 
+        console.log(filterColumns.length);
+        if (filterColumns && filterColumns.length > 0){
+          filterColumns.forEach(filter => {
+            // check it is an attivio column (as we don't want to clear other filters)
+            if (filter.dataColumnName.substring(0, 8) === "attivio_" && !filtersToModify.has(filter.dataColumnName)){
+              filter.filterSettings = {
+                includeEmpty: true
+              }
+              filter.filteringOperation = spotfire.webPlayer.filteringOperation.RESET;
+              filtersToModify.set(filter.dataColumnName, filter);
+            }
+          });
+        }
 
-      // change the run on open to trigger any filter actions required such as zoom map
-      this.app._document.setDocumentProperty(startUpProperty, Math.random().toString());
+        // now loop all filters to change and apply
+        for (var newFilter of filtersToModify.values()) {
+          spotfireWebPlayer.filtering.setFilter(newFilter, newFilter.filteringOperation);
+        };
+
+        // change the run on open to trigger any filter actions required such as zoom map
+        spotfireWebPlayer.setDocumentProperty(startUpProperty, Math.random().toString());
+
+      });
       
     }
 
     // have any properties changed?
     if (propertiesHaveChanged){
-
-      nextProps.documentProperties.forEach(documentProperty => 
+     nextProps.documentProperties.forEach(documentProperty => 
       {
         this.app._document.setDocumentProperty(documentProperty.name, documentProperty.value);
-      });
-      
+      });    
     }
 
-    return false;
+    return filtersHaveChanged | propertiesHaveChanged;
     
   }
 
