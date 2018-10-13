@@ -24,9 +24,9 @@ type SearchProfilePickerDefaultProps = {
  */
 export default class SearchProfilePicker extends React.Component<SearchProfilePickerDefaultProps, SearchProfilePickerProps, void> { // eslint-disable-line max-len
   static defaultProps = {
-    initialValue: 'All Sources',
+    initialValue: '',
     label: 'Search Profile:',
-    profiles: ["All Sources", "Metals Sector Plan"],
+    profiles: ["All Sources", "Metals Sector Plan"] // move this to config file in future,
     right: false,
   };
 
@@ -43,16 +43,16 @@ export default class SearchProfilePicker extends React.Component<SearchProfilePi
 
   onSelect(item: MenuItemDef) {
     const searcher = this.context.searcher;
-    if (searcher && searcher.businessCenterProfile !== item.value) {
+    if (searcher && searcher.state.businessCenterProfile !== item.value) {
       searcher.updateQueryProfile(item.value);
     }
   }
 
   render() {
     const searcher = this.context.searcher;
-    let value = 'All Sources';
+    let value = this.props.initialValue;
     if (searcher) {
-      value = searcher.state.businessCenterProfile;
+      value = searcher.state.businessCenterProfile ? searcher.state.businessCenterProfile : searcher.props.businessCenterProfile;
     }
 
     const items = [];

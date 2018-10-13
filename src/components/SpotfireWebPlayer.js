@@ -102,9 +102,11 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
     // have any filters changed?
     if (filtersHaveChanged){
 
+      // build array of filters to alter
+      var filtersToModify = new Map();
+
       // first clear existing filters
-      var thisWebPlayer = this.app._document;
-      thisWebPlayer.filtering.getAllModifiedFilterColumns(spotfire.webPlayer.includedFilterSettings.NONE, function(filterColumns){ 
+      this.app._document.filtering.getAllModifiedFilterColumns(spotfire.webPlayer.includedFilterSettings.NONE, function(filterColumns){ 
         if (filterColumns && filterColumns.length > 0){
           filterColumns.forEach(filter => {
             // check it is an attivio column (as we don't want to clear other filters)
@@ -113,17 +115,17 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
                 includeEmpty: true
               }
               filter.filteringOperation = spotfire.webPlayer.filteringOperation.RESET;
-              thisWebPlayer.filtering.setFilter(filter, spotfire.webPlayer.filteringOperation.RESET);
+              filtersToModify.set(filter.dataColumnName, filter);
             }
           });
         }
       });
-      // loop filters
+      // loop filters and apply
       nextProps.filters.forEach(filter =>
       {
 
         // set up a filter object with the new values
-        let thisFilter = {
+        let spotfireFilter = {
 					filteringSchemeName: filter.scheme,
 					dataTableName: filter.table,
 					dataColumnName: filter.column,
@@ -133,12 +135,17 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
 						values: filter.values
           }
         };
-
-        // set the filter
-        this.app._document.filtering.setFilter(thisFilter, spotfire.webPlayer.filteringOperation.REPLACE);
-        // change the run on open to trigger any filter actions required such as zoom map
-        this.app._document.setDocumentProperty(startUpProperty, Math.random().toString());
+        
+        filtersToModify.set(spotfireFilter.dataColumnName,spotfireFilter);
       });
+
+      for (var newFilter of filtersToModify.values()) {
+          this.app._document.filtering.setFilter(newFilter, spotfire.webPlayer.filteringOperation.REPLACE);
+      };
+
+      // change the run on open to trigger any filter actions required such as zoom map
+      this.app._document.setDocumentProperty(startUpProperty, Math.random().toString());
+      
     }
 
     // have any properties changed?
@@ -151,7 +158,7 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
       
     }
 
-    return filtersHaveChanged || propertiesHaveChanged;
+    return false;
     
   }
 
