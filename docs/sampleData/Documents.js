@@ -2410,9 +2410,13 @@ const fieldsCopy = new Map(documents[9].fields);
 const docWithChildren = new SearchDocument(fieldsCopy);
 docWithChildren.children = documents.slice(0, 9);
 const spotfireFields = fieldsCopy;
-spotfireFields.set('pki.suit.type', ['spotfire']);
+spotfireFields.set('suit.type', ['spotfire']);
 spotfireFields.set('table', ['Spotfire']);
-spotfireFields.set('pki.spotfire.show.entities', ['no']);
+spotfireFields.set('spotfire.host', ['http://sepa-app-spl01/spotfire/wp/']);
+spotfireFields.set('spotfire.login.url', ['http://sepa-app-spl01/']);
+spotfireFields.set('spotfire.file', ['/Projects/Data Visualisation Course/Examples']);
+spotfireFields.set('spotfire.show.entities', ['no']);
+
 const spotfireDoc = new SearchDocument(spotfireFields);
 
 const sampleDocs = {

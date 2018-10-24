@@ -1,8 +1,9 @@
 import React from 'react';
+import Configurable from './Configurable';
 
-var LOGIN_URL = 'http://sepa-app-spl01/';
-var DEFAULT_HOST = 'http://sepa-app-spl01/spotfire/wp/';
-var DEFAULT_FILE = '/Projects/Data Visualisation Course/Examples';
+//var LOGIN_URL = 'http://sepa-app-spl01/';
+//var DEFAULT_HOST = 'http://sepa-app-spl01/spotfire/wp/';
+//var DEFAULT_FILE = '/Projects/Data Visualisation Course/Examples';
 const startUpProperty = "attivioRunOnOpen";
 const customizationInfo = new spotfire.webPlayer.Customization();
 customizationInfo.showTopHeader = false;
@@ -39,8 +40,14 @@ function constructFilterString(filterObjects) {
           const values = filter.values.map(function (value) {
             return "\"" + value + "\"";
           });
-          const valuesString = "{" + values.join(',') + "}";
-          return acc + "SetFilter(tableName=\"" + filter.table + "\", columnName=\"" + filter.column + "\", values=" + valuesString + ");";
+          let valuesString = "{" + values.join(',') + "}";
+          let filterMethod = "values";
+
+          if (filter.column === "attivio_General_nometadata"){
+            filterMethod = "searchPattern";
+          }
+          
+          return acc + "SetFilter(tableName=\"" + filter.table + "\", columnName=\"" + filter.column + "\", " + filterMethod + "=" + valuesString + ");";
         }
     }
 
@@ -57,9 +64,9 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
   static displayName = 'SpotfireWebPlayer';
 
   static defaultProps: SpotfireWebPlayerProps = {
-    host: DEFAULT_HOST,
-    file: DEFAULT_FILE,
-    loginUrl: LOGIN_URL,
+    host: null,
+    file: '',
+    loginUrl: null,
     guid: '',
     documentProperties: [],
     filters: []
@@ -225,4 +232,4 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
 
 // TODO: move to class method?
 SpotfireWebPlayer.constructFilterString = constructFilterString;
-export default SpotfireWebPlayer;
+export default Configurable(SpotfireWebPlayer);
