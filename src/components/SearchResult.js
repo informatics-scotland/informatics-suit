@@ -353,29 +353,27 @@ export default class SearchResult extends React.Component<SearchResultDefaultPro
     const spotfireEntitiesField = "spotfire_entities";
     const generalFilterField = "attivio_General_nometadata";
 
-    // set properties to be used by this function but also to pass tot he SpotfireWebPlayer react component
+    // set properties to be used by this function but also to pass to the SpotfireWebPlayer react component
     const spotfireProps = {}
+    spotfireProps.spotfireEntities = doc.getFirstValue(spotfireEntitiesField);
+    spotfireProps.toolType = spotfireType;
+    spotfireProps.entityFields = this.props.entityFields;
+
+    // grab the query ran or written by query frames so we can extract entities from it
+    let query = doc.signal.query;
+    if (!query || query === ""){
+      query = searcher.state.query;
+    }
+    spotfireProps.query = query
 
     // whether to show the 360 link or not..
     let show360Link = null;
 
-    // do you wan to show the document entities panel beside the Spotfire widget - comes from field property
+    // do you want to show the document entities panel beside the Spotfire widget - comes from field property
     let showEntitiesProperty = doc.getFirstValue('spotfire.show.entities');
     let showEntities = false;
     if (showEntitiesProperty.toLowerCase() === "yes" || showEntitiesProperty.toLowerCase() === "true"){
       showEntities = true;
-    }
-
-    // take Spotfire host from either document field of configuration properties
-    let host = doc.getFirstValue(suitSpotfireHostField);
-    if (host) {
-      spotfireProps.host = host;
-    }
-
-    // take Spotfire host from either document field of configuration properties
-    let loginUrl = doc.getFirstValue(suitSpotfireLogInUrlField);
-    if (loginUrl) {
-      spotfireProps.loginUrl = loginUrl;
     }
 
     // get path to Spotfire dxp
@@ -383,128 +381,16 @@ export default class SearchResult extends React.Component<SearchResultDefaultPro
     if (spotfireType === "spotfire-widget"){
         file = spotfireWidgetHome + table + " Summary";
         show360Link = "Show 360° View";
+        if (doc.getFirstValue(suitSpotfireIdField) != ""){
+          spotfireProps.widgetFilterValue = doc.getFirstValue(doc.getFirstValue(suitSpotfireIdField));
+        }
+        else{
+          spotfireProps.widgetFilterValue = docId;
+        }
     }
     if (file) {
       spotfireProps.file = file;
     }  
-
-    // convert the spotfire entities field into JSON
-    let spotfireEntityFields = [];
-    if (doc.getFirstValue(spotfireEntitiesField) != ""){
-      spotfireEntityFields = JSON.parse(doc.getFirstValue(spotfireEntitiesField).replace(new RegExp("\&quot;", 'g'), '"'))["attivioEntities"];
-    }
-
-    // create array of filters
-    var filters = [];
-    var documentProperties = [];
-
-    // grab the query ran or written by query frames so we can extract entities from it
-    let query = doc.signal.query;
-    if (!query || query === ""){
-      query = searcher.state.query;
-    }
-  
-    // compare attivio entity fields with Spotfire entities to find matching filters
-    if (spotfireEntityFields.length > 0){
-
-      let countOfEntityFieldsFounds = 0;
-      spotfireEntityFields.forEach((spotfireEntity) => {
-
-      // extract value to pass based upon Spotfire type
-      let spotfireValues = [];
-      if (spotfireType == "spotfire-widget"){
-        if (doc.getFirstValue(suitSpotfireIdField) != ""){
-          spotfireValues.push(doc.getFirstValue(doc.getFirstValue(suitSpotfireIdField)));
-        }
-        else{
-          spotfireValues.push(docId);
-        }
-      }
-
-      if (spotfireType === "spotfire"){
-
-        let keyName = spotfireEntity.columnName;
-        if (spotfireEntity.type === "property"){
-          keyName = spotfireEntity.propertyName;
-        }
-      
-        // remove attivo prefix from key
-        let fieldNameRegex = new RegExp("attivio_?", "gi");
-        keyName = keyName.replace(fieldNameRegex, "");
-
-        this.props.entityFields.forEach(function (fieldLabel, fieldName) {
-          // if we have a match on name - the spotfire tool can be filtered by this entity
-          if (fieldName.toLowerCase() === keyName.toLowerCase() && query.includes(fieldName + ":")){
-
-            // set the regex for getting the searched for values out the query frame
-            let queryRegex = new RegExp(".*" + fieldName.toLowerCase() + ":or\\(\"?([A-z0-9 -_]+?)\"?\\).*$", "gi");
-            // this handle queries in the form of entity:value
-            let queryRegex2 = new RegExp(".*" + fieldName.toLowerCase() + ":([A-z0-9 -_]+?)", "gi");
-            // get the values out
-            let queryValues = query.replace(queryRegex,'$1').replace(queryRegex2, '$1');
-            if (queryValues){
-              if (spotfireEntity.type === "filter"){
-
-                // add the values to the array
-                spotfireValues.push(queryValues.toLowerCase());
-
-                // make the filter object and push it into the filters array
-                filters.push({
-                  scheme: spotfireEntity.filterScheme,
-                  table: spotfireEntity.tableName,
-                  column: spotfireEntity.columnName,
-                  values: spotfireValues,
-                });
-
-                countOfEntityFieldsFounds++;
-              }
-              else if (spotfireEntity.type === "property"){
-
-                let documentPropertyValue = queryValues;
-                if (spotfireEntity.propertyName !== startUpProperty){
-                  documentProperties.push({
-                    name: spotfireEntity.propertyName,
-                    value: documentPropertyValue
-                  });
-
-                  countOfEntityFieldsFounds++;
-                }
-              }
-            }
-          }
-        }, spotfireEntity);
-      }
-      else if (spotfireType === "spotfire-widget"){
-        // make the filter object and push it into the filters array
-        filters.push({
-          scheme: spotfireEntity.filterScheme,
-          table: spotfireEntity.tableName,
-          column: spotfireEntity.columnName,
-          values: spotfireValues,
-        }); 
-      }
-      
-      });
-      
-/*      if (countOfEntityFieldsFounds === 0){
-
-        spotfireEntityFields.forEach((spotfireEntity) => {
-
-          if (spotfireEntity.columnName === generalFilterField){
-            filters.push({
-              scheme: spotfireEntity.filterScheme,
-              table: spotfireEntity.tableName,
-              column: generalFilterField,
-              values: [query],
-            });
-          }
-        });
-      }*/
-
-    }
-
-    spotfireProps.filters = filters;
-    spotfireProps.documentProperties = documentProperties;
 
     return (
       <div className="attivio-search-result row">
