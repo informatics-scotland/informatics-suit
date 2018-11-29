@@ -75,8 +75,10 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
     };
 
     this.widget = "spotfire-widget";
-    this.matchEntities(this.parseSpotfireEntities(this.props.spotfireEntities));
-    const parameters = "initialLoad = False; " + this.props.startUpProperty + " = '" + Math.random().toString() + "'; " + this.constructFilterString(this.filters);
+    let filtersAndProperties = this.matchEntities(this.parseSpotfireEntities(this.props.spotfireEntities), this.props.query);
+    this.filters = filtersAndProperties.filters;
+    this.documentProperties = filtersAndProperties.documentProperties;
+    const parameters = "initialLoad = False; " + this.props.startUpProperty + " = \"" + Math.random().toString() + "\"; " + this.constructFilterString(this.filters);
 
     spotfire.webPlayer.createApplication(
       this.props.host,
@@ -109,12 +111,11 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
     return spotfireEntityFields;
   }
 
-  matchEntities(spotfireEntityFields){
+  matchEntities(spotfireEntityFields, query){
 
     // create array of filters
     let filters = [];
     let documentProperties = [];
-    let query = this.props.query;
   
     // compare attivio entity fields with Spotfire entities to find matching filters
     if (spotfireEntityFields.length > 0){
@@ -209,8 +210,12 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
 
     }
 
-    this.filters = filters;
-    this.documentProperties = documentProperties;
+    return { 
+      filters: filters,
+      documentProperties: documentProperties
+    };
+    //this.filters = filters;
+    //this.documentProperties = documentProperties;
 
   }
   
@@ -240,9 +245,7 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
     return filterString;
   }
 
-  componentDidMount(){
-
-  }
+  //componentDidMount(){  }
 
   shouldComponentUpdate(nextProps){
 
@@ -260,10 +263,10 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
       // build array of filters to alter
       let filtersToModify = new Map();
       let startUpProperty = this.props.startUpProperty;
-      this.matchEntities(this.parseSpotfireEntities(nextProps.spotfireEntities));
-
+      let filtersAndProperties = this.matchEntities(this.parseSpotfireEntities(nextProps.spotfireEntities), nextProps.query);
+      
       // loop filters and apply
-      nextProps.filters.forEach(filter =>
+      filtersAndProperties.filters.forEach(filter =>
       {
 
         // set up a filter object with the new values
@@ -282,7 +285,7 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
       });
 
       // first clear existing filters
-      var spotfireWebPlayer = this.app.analysisDocument;
+      var spotfireWebPlayer = this.app;
       spotfireWebPlayer.filtering.getAllModifiedFilterColumns(spotfire.webPlayer.includedFilterSettings.NONE, function(filterColumns){ 
         console.log(filterColumns.length);
         if (filterColumns && filterColumns.length > 0){
@@ -294,20 +297,23 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
               }
               filter.filteringOperation = spotfire.webPlayer.filteringOperation.RESET;
               filtersToModify.set(filter.dataColumnName, filter);
+              console.log("Resetting... " + filter.dataColumnName);
             }
           });
         }
 
         // now loop all filters to change and apply
+        // This must live within the callback of get all modified filters, otherwise it runs before the reset happens
         for (var newFilter of filtersToModify.values()) {
           spotfireWebPlayer.filtering.setFilter(newFilter, newFilter.filteringOperation);
+          console.log("Applying filter... " + newFilter.dataColumnName);
         };
 
         // change the run on open to trigger any filter actions required such as zoom map
         spotfireWebPlayer.setDocumentProperty(startUpProperty, Math.random().toString());
-
+        
       });
-      
+    
     }
 
     // have any properties changed?
@@ -328,22 +334,25 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
   onReadyCallback(response, newApp)
   {
       const app = newApp;
-      if(response.status === "OK")
+      if(typeof response !== 'undefined' && response.status === "OK")
       {
           // The application is ready, meaning that the api is loaded and that 
           // the analysis path is validated for the current session 
           // (anonymous or logged in user)
-          console.log("OK received. Opening document...")
+          console.log("OK received. Opening document...");
           app.openDocument(this.state.guid);
 
           app.onError(this.errorCallback.bind(this));
           app.onClosed(this.onClosedCallback.bind(this));
           app.onOpened(this.onOpenedCallback.bind(this));
-          this.app = app;
+          this.app = app.analysisDocuments[0];
+      }
+      else if (typeof response === 'undefined'){
+        console.log("No response object received...");
       }
       else
       {
-          console.log("Status not OK. " + response.status + ": " + response.message)
+          console.log("Status not OK. " + response.status + ": " + response.message);
       }
   }
 
