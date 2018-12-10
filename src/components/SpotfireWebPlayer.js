@@ -126,7 +126,15 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
       // extract value to pass based upon Spotfire type
       let spotfireValues = [];
       if (this.props.toolType === this.widget){
+
         spotfireValues.push(this.props.widgetFilterValue);
+        // make the filter object and push it into the filters array
+        filters.push({
+          scheme: spotfireEntity.filterScheme,
+          table: spotfireEntity.tableName,
+          column: spotfireEntity.columnName,
+          values: spotfireValues,
+        });
       }
       else if (this.props.toolType === "spotfire"){
 
