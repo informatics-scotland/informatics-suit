@@ -31,6 +31,8 @@ export default class DefaultImage extends React.Component<DefaultImageDefaultPro
     defaultSrc: null,
   }
 
+  static displayName = 'DefaultImage';
+
   constructor(props: DefaultImageProps) {
     super(props);
     this.state = {
@@ -40,6 +42,14 @@ export default class DefaultImage extends React.Component<DefaultImageDefaultPro
   }
 
   state: DefaultImageState;
+
+  componentWillReceiveProps(newProps: DefaultImageProps) {
+    if (newProps.src !== this.props.src) {
+      this.setState({
+        src: newProps.src,
+      });
+    }
+  }
 
   onError() {
     let src = null;
@@ -52,9 +62,9 @@ export default class DefaultImage extends React.Component<DefaultImageDefaultPro
   }
 
   render() {
-    const src = this.state.src;
-    if (src !== null) {
-      return <img src={this.state.src} onError={this.onError} {...this.props} />; // eslint-disable-line jsx-a11y/alt-text
+    const { src, defaultSrc, ...props } = this.props;
+    if (this.state.src !== null) {
+      return <img src={this.state.src} onError={this.onError} {...props} />; // eslint-disable-line jsx-a11y/alt-text
     }
     return null;
   }

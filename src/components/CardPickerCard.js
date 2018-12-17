@@ -1,6 +1,7 @@
 // @flow
 
 import React from 'react';
+import DefaultImage from './DefaultImage';
 
 type CardPickerCardProps = {
   /**
@@ -12,6 +13,11 @@ type CardPickerCardProps = {
    * The icon is limited in size to 60x60 pixels.
    */
   iconUri: string | null;
+  /**
+   * The URI for the icon to display if the specified icon cannot be found.
+   * The icon is limited in size to 60x60 pixels.
+   */
+  defaultIconUri: string | null;
   /**
    * If set, then the card is drawn with a selected border and is not
    * clickable.
@@ -30,12 +36,18 @@ type CardPickerCardProps = {
 
 type CardPickerCardDefaultProps = {
   columns: number;
+  iconUri: string | null;
+  defaultIconUri: string | null;
 };
 
 export default class CardPickerCard extends React.Component<CardPickerCardDefaultProps, CardPickerCardProps, void> {
   static defaultProps = {
     columns: 3,
+    iconUri: null,
+    defaultIconUri: null,
   };
+
+  static displayName = 'CardPickerCard';
 
   constructor(props: CardPickerCardProps) {
     super(props);
@@ -69,8 +81,9 @@ export default class CardPickerCard extends React.Component<CardPickerCardDefaul
     };
 
     const icon = this.props.iconUri ? (
-      <img
+      <DefaultImage
         src={this.props.iconUri}
+        defaultSrc={this.props.defaultIconUri}
         style={{
           maxHeight: '60px',
           maxWidth: '60px',

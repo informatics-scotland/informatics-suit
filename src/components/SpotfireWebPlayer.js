@@ -201,7 +201,7 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
       
       });
       
-/*      if (countOfEntityFieldsFounds === 0){
+      if (countOfEntityFieldsFounds === 0){
 
         spotfireEntityFields.forEach((spotfireEntity) => {
 
@@ -214,7 +214,7 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
             });
           }
         });
-      }*/
+      }
 
     }
 

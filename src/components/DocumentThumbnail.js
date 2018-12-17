@@ -15,7 +15,7 @@ type DocumentThumbnailProps = {
   /**
    * The URIs of any images to display as previews for the document.
    * If there are none or this isn't set, then no previews will be
-   * available whenclicking the thumbnail. Otherwise, a modal
+   * available when clicking the thumbnail. Otherwise, a modal
    * will open up to display the preview(s). If there are multiple
    * URIs, then they will be displayed in a carousel-type control
    * and the user can flip through them.
@@ -41,7 +41,7 @@ type DocumentThumbnailState = {
  * isn't valid, then the image is hidden rather than showing a
  * broken image in the browser.
  */
-export default class DocumentThumbnail extends React.Component<DocumentThumbnailDefaultProps, DocumentThumbnailProps, DocumentThumbnailState> {
+export default class DocumentThumbnail extends React.Component<DocumentThumbnailDefaultProps, DocumentThumbnailProps, DocumentThumbnailState> { // eslint-disable-line max-len
   static defaultProps = {
     uri: null,
     previewUris: [],
