@@ -48,22 +48,27 @@ export default class SpotfireSearchResult extends React.Component<SpotfireSearch
      * Renders a <SimpleSearchResult> component for the document.
      */
     static renderer(doc: SearchDocument, position: number, baseUri: string, key: string) {
-    return (
-        <SpotfireSearchResult document={doc} position={position} baseUri={baseUri} key={key} />
-    );
+
+        const suitTypeField = 'suit.type';
+        // check if it is a Spotfire tool or widget
+        if (doc.getFirstValue('suit.type').substring(0,8) === 'spotfire') {
+            return (
+                <SpotfireSearchResult document={doc} position={position} baseUri={baseUri} key={key} />
+            );
+        }
+        return null;
     }
 
     static displayName = 'SpotfireSearchResult';
 
     static contextTypes = {
-    configuration: PropTypes.instanceOf(Configuration),
+        configuration: PropTypes.instanceOf(Configuration),
     };
 
     render() {
 
         // spotfireType
 
-        const suitTypeField = 'suit.type';
         const searcher = this.context.searcher;
         const doc = this.props.document;
         const table = doc.getFirstValue(FieldNames.TABLE);
@@ -76,18 +81,19 @@ export default class SpotfireSearchResult extends React.Component<SpotfireSearch
         const spotfireWidgetHome = '/Projects/Metadata Tools/Widgets/';
         const docId = doc.getFirstValue('.id');
         const spotfireEntitiesField = "spotfire_entities";
+        const spotfireTypeField = "suit.type";
         const generalFilterField = "attivio_General_nometadata";
 
         // set properties to be used by this function but also to pass to the SpotfireWebPlayer react component
         const spotfireProps = {}
         spotfireProps.spotfireEntities = doc.getFirstValue(spotfireEntitiesField);
-        spotfireProps.toolType = spotfireType;
+        spotfireProps.toolType =  doc.getFirstValue(spotfireTypeField);
         spotfireProps.entityFields = this.props.entityFields;
 
         // grab the query ran or written by query frames so we can extract entities from it
         let query = doc.signal.query;
         if (!query || query === ""){
-        query = searcher.state.query;
+            query = searcher.state.query;
         }
         spotfireProps.query = query
 
@@ -98,23 +104,23 @@ export default class SpotfireSearchResult extends React.Component<SpotfireSearch
         let showEntitiesProperty = doc.getFirstValue('spotfire.show.entities');
         let showEntities = false;
         if (showEntitiesProperty.toLowerCase() === "yes" || showEntitiesProperty.toLowerCase() === "true"){
-        showEntities = true;
+            showEntities = true;
         }
 
         // get path to Spotfire dxp
         let file = doc.getFirstValue(suitSpotfireHostFile);
-        if (spotfireType === "spotfire-widget"){
+        if (spotfireProps.toolType === "spotfire-widget"){
             file = spotfireWidgetHome + table + " Summary";
             show360Link = "Show 360° View";
             if (doc.getFirstValue(suitSpotfireIdField) != ""){
-            spotfireProps.widgetFilterValue = doc.getFirstValue(doc.getFirstValue(suitSpotfireIdField));
+                spotfireProps.widgetFilterValue = doc.getFirstValue(doc.getFirstValue(suitSpotfireIdField));
             }
             else{
-            spotfireProps.widgetFilterValue = docId;
+                spotfireProps.widgetFilterValue = docId;
             }
         }
         if (file) {
-        spotfireProps.file = file;
+            spotfireProps.file = file;
         }  
 
         return (

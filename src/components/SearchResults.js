@@ -101,10 +101,16 @@ export default class SearchResults extends React.Component<SearchResultsDefaultP
       formats = this.props.format;
     } else if (this.props.format === 'list') {
       // 'list' -> ListSearchResult
-      formats = [ListSearchResult.renderer];
+      formats = [
+        SpotfireSearchResult.renderer,
+        ListSearchResult.renderer
+      ];
     } else if (this.props.format === 'simple') {
       // 'simple' -> SimpleSearchResult
-      formats = [SimpleSearchResult.renderer];
+      formats = [
+        SpotfireSearchResult.renderer,
+        SimpleSearchResult.renderer
+      ];
     } else if (this.props.format === 'debug') {
       // 'debug' -> DebugSearchResult
       formats = [DebugSearchResult.renderer];

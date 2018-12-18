@@ -2400,24 +2400,179 @@ const documentsJson =
     }
   ];
 
+const spotfireJsons = [
+  {
+  "fields": {
+  ".score": [
+  1
+  ],
+  ".id": [
+  "65020aa0-cb1c-49d8-a7aa-b5a2d7cc71eb"
+  ],
+  ".zone": [
+  "default"
+  ],
+  "title": [
+  "Companies House GOV UK"
+  ],
+  "teaser": [
+  "-- altered layout to better suit Attivio's limited space"
+  ],
+  "keywords": [
+  "customer",
+  "company",
+  "officer",
+  "filling"
+  ],
+  "uri": [
+  "localhost/spotfire/wp/ViewAnalysis.aspx?file="
+  ],
+  "size": [
+  900163
+  ],
+  "table": [
+  "Spotfire"
+  ],
+  "date": [
+  "2018-12-18T06:54:56.000+0000"
+  ],
+  "text": [
+  "-- altered layout to better suit Attivio's limited space"
+  ],
+  "sourcepath": [
+  ""
+  ],
+  "filename": [
+  "65020aa0-cb1c-49d8-a7aa-b5a2d7cc71eb.xml"
+  ],
+  "mimetype": [
+  "text/xml"
+  ],
+  "page_text": [],
+  "page_titles_mvs": [
+  "Company Search",
+  "Metadata"
+  ],
+  "processing.feedback.level": [
+  "ERROR"
+  ],
+  "processing.feedback.message": [
+  "Dictionary [default] has not been published"
+  ],
+  "processing.feedback.component": [
+  "indexer.applyTriggers"
+  ],
+  "processing.feedback.code": [
+  "TRIGGER-9"
+  ],
+  "description": [
+  "-- altered layout to better suit Attivio's limited space"
+  ],
+  "keyphrases": [],
+  "guid": [
+  "65020aa0-cb1c-49d8-a7aa-b5a2d7cc71eb"
+  ],
+  "sentiment": [
+  "pos"
+  ],
+  "sentiment.score": [
+  1
+  ],
+  "entity.sentiment.pos": [
+  "Son Ltd",
+  "Farm"
+  ],
+  "entity.sentiment.pos.score": [
+  18.442993,
+  47.758274
+  ],
+  "entity.sentiment.neg": [
+  "Mr"
+  ],
+  "entity.sentiment.neg.score": [
+  30.13249
+  ],
+  "suit.type": [
+  "spotfire"
+  ],
+  "spotfire.host": [
+  "http://sepa-app-spl01/spotfire/wp/"
+  ],
+  "spotfire.file": [
+  "/Projects/Metadata Tools/Tools/Companies House GOV UK"
+  ],
+  "spotfire_entities": [
+  '{"attivioEntities":[{"type": "property", "propertyName": "attivioCustomer"},{"type": "property", "propertyName": "attivioKeywords"},{"type": "property", "propertyName": "attivioRunOnOpen"}]}'],
+  "catchment": [
+  "Allan Water",
+  "Bervie Water",
+  "Cromarty Firth",
+  "Dornoch Firth",
+  "Forth Estuary",
+  "River Annan",
+  "River Clyde",
+  "River Don",
+  "River Doon",
+  "River Forth",
+  "River Lochy",
+  "River Naver",
+  "River Stinchar"
+  ],
+  "team": [
+  "Marine",
+  "Fife",
+  "Ayr",
+  "Perth",
+  "Angus & Dundee",
+  "Borders",
+  "Dumfries & Galloway",
+  "Edinburgh and The Lothians",
+  "North Highland",
+  "North Lanarkshire",
+  "Northern Isles",
+  "South Lanarkshire"
+  ],
+  "security.read": [
+  "anonymous:anonymous"
+  ],
+  "score.explain": [
+  "1.0 = (FEATURE QUERY)"
+  ]
+  },
+  "signal": {
+  "principal": "Anonymous:Administrator:Administrator",
+  "docId": "65020aa0-cb1c-49d8-a7aa-b5a2d7cc71eb",
+  "docOrdinal": 1,
+  "featureVector": "table_Spotfire=1.0,freshness=0.417416",
+  "query": "table:Spotfire",
+  "locale": "en",
+  "relevancyModelName": "default",
+  "relevancyModelVersion": 7,
+  "relevancyModelNames": [
+  "default"
+  ],
+  "queryTimestamp": 1545144228803,
+  "signalTimestamp": 1545144229122,
+  "type": "click",
+  "weight": 1,
+  "ttl": true
+  }
+  },
+];
+
 /* eslint-enable quote-props */
 
 const documents = documentsJson.map((documentJson) => {
   return SearchDocument.fromJson(documentJson);
 });
 
+const spotfireDocuments = spotfireJsons.map((spotfireJson) => {
+  return SearchDocument.fromJson(spotfireJson);
+});
+
 const fieldsCopy = new Map(documents[9].fields);
 const docWithChildren = new SearchDocument(fieldsCopy);
 docWithChildren.children = documents.slice(0, 9);
-const spotfireFields = fieldsCopy;
-spotfireFields.set('suit.type', ['spotfire']);
-spotfireFields.set('table', ['Spotfire']);
-spotfireFields.set('spotfire.host', ['http://sepa-app-spl01/spotfire/wp/']);
-spotfireFields.set('spotfire.login.url', ['http://sepa-app-spl01/']);
-spotfireFields.set('spotfire.file', ['/Projects/Data Visualisation Course/Examples']);
-spotfireFields.set('spotfire.show.entities', ['no']);
-
-const spotfireDoc = new SearchDocument(spotfireFields);
 
 const sampleDocs = {
   rawDocuments: documents,
@@ -2426,7 +2581,7 @@ const sampleDocs = {
   elsalvador: documents[3],
   bolivia: documents[4],
   docWithChildren,
-  spotfire: spotfireDoc
+  spotfire: spotfireDocuments[0],
 };
 
 export default sampleDocs;

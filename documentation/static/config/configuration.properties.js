@@ -394,4 +394,51 @@
     // only show links to documents that come from tables other than the one the main document is in.
     includeAllTables: false,
   },
+
+  /**
+   * These properties configure the Spotfire web player 
+   */
+  SpotfireWebPlayer: {
+    // set the Spotfire server host web player address
+    host: 'http://sepa-app-spl01',
+    // set the log in url
+    loginUrl: 'http://sepa-app-spl01',
+    // document field name the holds a host if you are overriding the property declared above
+    suitSpotfireHostField: 'spotfire.host',
+    // document field name the holds the log in url if you are overriding the property declared above
+    suitSpotfireLogInUrlField: 'spotfire.login.url',
+    // document field name that holds the path to the spotfire tool
+    suitSpotfireHostFile: 'spotfire.file',
+    // document field name that holds spotfire entities JSON string 
+    entitiesField: "spotfire_entities",
+    // JSON Ojbect name that holds the array from the entitiesField
+    attivioEntitiesField: "attivioEntities",    
+    // document field name that holds column name for filtering Spotfire widget to appropriate data - only applies to widgets
+    suitSpotfireIdField: 'spotfire.id.field',
+    // path to widgets in the spotfire library
+    widgetHome: '/Projects/Metadata Tools/Widgets/',
+    // 
+    startUpProperty: "attivioRunOnOpen",
+    // Default customisation settings for any Spotfire tool
+    customizationInfo: {
+      showTopHeader: false,
+      showToolBar: false,
+      showExportFile: true,
+      showExportVisualization: true,
+      showCustomizableHeader: false,
+      showPageNavigation: false,
+      showStatusBar: false,
+      showDodPanel: false,
+      showFilterPanel: false,
+      showAbout: false,
+      showAnalysisInformationTool: false,
+      showAuthor: false,
+      showClose: false,
+      showHelp: true,
+      showLogout: false,
+      showReloadAnalysis: false,
+      showUndoRedo: false,
+      showAnalysisInfo: false
+    },
+  }
 }

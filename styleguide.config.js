@@ -75,7 +75,12 @@ module.exports = {
           content: 'width=device-width, initial-scale=1.0',
         },
       ],
-      links: [
+      scripts: [
+        {
+          src: 'http://sepa-app-spl01/spotfire/js-api/loader.js',
+        },
+      ],
+      links: [      
         {
           rel: 'stylesheet',
           href: 'https://api.tiles.mapbox.com/mapbox-gl-js/v0.37.0/mapbox-gl.css',
@@ -151,6 +156,7 @@ module.exports = {
               'src/components/SentimentBar.js',
               'src/components/SimpleSearchResult.js',
               'src/components/SpellCheckMessage.js',
+              'src/components/SpotfireSearchResult.js',
             ];
           },
         },

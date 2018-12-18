@@ -75,10 +75,20 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
     };
 
     this.widget = "spotfire-widget";
-    let filtersAndProperties = this.matchEntities(this.parseSpotfireEntities(this.props.spotfireEntities), this.props.query);
-    this.filters = filtersAndProperties.filters;
-    this.documentProperties = filtersAndProperties.documentProperties;
-    const parameters = "initialLoad = False; " + this.props.startUpProperty + " = \"" + Math.random().toString() + "\"; " + this.constructFilterString(this.filters);
+
+    let parameters = "initialLoad = False; "
+    if (this.props.startUpProperty !== ""){
+      parameters += this.props.startUpProperty  + " = \"" + Math.random().toString() + "\"; ";
+    }
+    if (this.props.filters){
+      parameters += this.constructFilterString(this.props.filters);
+    }
+    else if (this.props.spotfireEntities && this.props.query){
+      let filtersAndProperties = this.matchEntities(this.parseSpotfireEntities(this.props.spotfireEntities), this.props.query);
+      this.filters = filtersAndProperties.filters;
+      this.documentProperties = filtersAndProperties.documentProperties;
+      parameters += this.constructFilterString(this.filters);
+    }
 
     spotfire.webPlayer.createApplication(
       this.props.host,
@@ -105,7 +115,7 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
   parseSpotfireEntities(entities){
     // convert the spotfire entities field into JSON
     let spotfireEntityFields = [];
-    if (entities != ""){
+    if (typeof entities !== 'undefined' && entities != null){
       spotfireEntityFields = JSON.parse(entities.replace(new RegExp("\&quot;", 'g'), '"'))["attivioEntities"];
     }
     return spotfireEntityFields;
@@ -203,7 +213,7 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
       
       if (countOfEntityFieldsFounds === 0){
 
-        spotfireEntityFields.forEach((spotfireEntity) => {
+       /* spotfireEntityFields.forEach((spotfireEntity) => {
 
           if (spotfireEntity.columnName === generalFilterField){
             filters.push({
@@ -213,7 +223,7 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
               values: [query],
             });
           }
-        });
+        });*/
       }
 
     }

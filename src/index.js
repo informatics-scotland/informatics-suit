@@ -1,5 +1,3 @@
-import SpotfireWebPlayer from "./components/SpotfireWebPlayer";
-
 // API classes
 export AbstractDocument from './api/AbstractDocument';
 export DataPoint from './api/DataPoint';
@@ -150,6 +148,7 @@ export SimpleSearchResult from './components/SimpleSearchResult';
 export SimpleAutoCompleteInput from './components/SimpleAutoCompleteInput';
 export SmallTabs from './components/SmallTabs';
 export SpellCheckMessage from './components/SpellCheckMessage';
+export SpotfireSearchResult from './components/SpotfireSearchResult';
 export SpotfireWebPlayer from './components/SpotfireWebPlayer';
 export SqlLog from './components/SqlLog';
 export StarRating from './components/StarRating';
