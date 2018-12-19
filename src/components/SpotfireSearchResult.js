@@ -73,29 +73,40 @@ export default class SpotfireSearchResult extends React.Component<SpotfireSearch
         const doc = this.props.document;
         const table = doc.getFirstValue(FieldNames.TABLE);
         const docTags = doc.getAllValues('tags');
-        const startUpProperty = "attivioRunOnOpen";
         const suitSpotfireIdField = 'spotfire.id.field';
-        const suitSpotfireHostField = 'spotfire.host';
-        const suitSpotfireLogInUrlField = 'spotfire.login.url';
         const suitSpotfireHostFile = 'spotfire.file';
+        const suitSpotfireHost = 'spotfire.host';
+        const suitSpotfireLoginUrl = 'spotfire.login.url';
         const spotfireWidgetHome = '/Projects/Metadata Tools/Widgets/';
         const docId = doc.getFirstValue('.id');
         const spotfireEntitiesField = "spotfire_entities";
         const spotfireTypeField = "suit.type";
-        const generalFilterField = "attivio_General_nometadata";
+        const spotfireStartUpPropertyField = "spotfire_startup_property";
 
         // set properties to be used by this function but also to pass to the SpotfireWebPlayer react component
         const spotfireProps = {}
         spotfireProps.spotfireEntities = doc.getFirstValue(spotfireEntitiesField);
         spotfireProps.toolType =  doc.getFirstValue(spotfireTypeField);
         spotfireProps.entityFields = this.props.entityFields;
+        // if provided use host etc - otherwise this comes form config properties js file
+        if (doc.getFirstValue(suitSpotfireHost) !== ""){
+            spotfireProps.host = doc.getFirstValue(suitSpotfireHost);
+        }
+        if (doc.getFirstValue(suitSpotfireLoginUrl) !== ""){
+            spotfireProps.loginUrl = doc.getFirstValue(suitSpotfireLoginUrl);
+        }
+        if (doc.getFirstValue(spotfireStartUpPropertyField) !== ""){
+            spotfireProps.startUpProperty = doc.getFirstValue(spotfireStartUpPropertyField);
+        }
 
         // grab the query ran or written by query frames so we can extract entities from it
-        let query = doc.signal.query;
-        if (!query || query === ""){
-            query = searcher.state.query;
+        if (doc.signal && doc.signal.query){
+            let query = doc.signal.query;
+            if (!query || query === ""){
+                query = searcher.state.query;
+            }
+            spotfireProps.query = query;
         }
-        spotfireProps.query = query
 
         // whether to show the 360 link or not..
         let show360Link = null;

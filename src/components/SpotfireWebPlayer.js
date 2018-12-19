@@ -77,16 +77,20 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
     this.widget = "spotfire-widget";
 
     let parameters = "initialLoad = False; "
-    if (this.props.startUpProperty !== ""){
+    if (this.props.startUpProperty){
       parameters += this.props.startUpProperty  + " = \"" + Math.random().toString() + "\"; ";
     }
-    if (this.props.filters){
+    if (this.props.documentProperties && this.props.documentProperties.length > 0){
+      parameters += this.constructPropertystring(this.props.documentProperties);
+    }
+    if (this.props.filters && this.props.filters.length > 0){
       parameters += this.constructFilterString(this.props.filters);
     }
     else if (this.props.spotfireEntities && this.props.query){
       let filtersAndProperties = this.matchEntities(this.parseSpotfireEntities(this.props.spotfireEntities), this.props.query);
       this.filters = filtersAndProperties.filters;
       this.documentProperties = filtersAndProperties.documentProperties;
+      parameters += this.constructPropertystring(this.documentProperties);
       parameters += this.constructFilterString(this.filters);
     }
 
@@ -238,6 +242,25 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
   }
   
   // generate the required parameter string for the tool
+  constructPropertystring(propertyObjects){
+
+    const propertyString = propertyObjects.reduce(function (acc, property) {
+      if (property.name && property.value) {
+        // check for a type
+        if (property.type && property.type !== 'string'){
+          return acc + property.name + " = " + property.value + ";";
+        }
+        else{
+          return acc + property.name + " = '" + property.value + "';";
+        }
+      }
+      return acc;
+    }, '');
+    return propertyString;
+
+  }
+
+  // generate the required parameter string for the tool
   constructFilterString(filterObjects) {
   
     const filterString = filterObjects.reduce(function (acc, filter) {
@@ -375,15 +398,6 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
   }
 
   onOpenedCallback() {
-
-    // apply any document properties passed
-    if (this.props.documentProperties.length > 0) {
-      this.props.documentProperties.forEach(documentProperty => {
-
-        // set each property in order
-        this.app.analysisDocument.setDocumentProperty(documentProperty.name, documentProperty.value);
-      });
-    }
     this.setState({ msg: '', isLoaded: true, isInitializing: false });
   }
 
