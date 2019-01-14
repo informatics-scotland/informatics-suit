@@ -7,6 +7,7 @@ import FieldNames from '../api/FieldNames';
 import DebugSearchResult from './DebugSearchResult';
 import ListSearchResult from './ListSearchResult';
 import SimpleSearchResult from './SimpleSearchResult';
+import SpotfireSearchResult from './SpotfireSearchResult';
 import SearchDocument from '../api/SearchDocument';
 
 /**
