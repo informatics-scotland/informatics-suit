@@ -6,17 +6,22 @@ If the `suit.type` field is `spotfire`, the `SearchResult` should render as a Sp
   const docs = require('../sampleData/Documents').default;
 
   // set properties to be used by this function but also to pass to the SpotfireWebPlayer react component
+  docs.spotfire.fields.set('suitSpotfireIdField', 'spotfire.id.field');
+  docs.spotfire.fields.set('suitSpotfireFileField', 'spotfire.file');
+  docs.spotfire.fields.set('suitSpotfireHost', 'spotfire.host');
+  docs.spotfire.fields.set('suitSpotfireLoginUrl', 'spotfire.login.url');
+  docs.spotfire.fields.set('spotfireEntitiesField', 'spotfire_entities');
   docs.spotfire.fields.set('spotfire.file',['/Projects/Metadata Tools/Attivio Test Tool/Examples']);
   docs.spotfire.fields.set('spotfire_entities', ['{"attivioEntities":[{"type": "filter", "Filtering scheme": "attivio", "tableName": "Data Table (2)", "columnName": "attivio_DetectionMethod"},{"type": "property", "propertyName": "attivioUri"},{"type": "property", "propertyName": "attivioRunOnOpen"},{"type": "property", "propertyName": "attivioKeywords"}]}']);
 
   const { StaticRouter } = require('react-router-dom');
   <StaticRouter context={{}}>
     <SpotfireSearchResult document={docs.spotfire} position={1}  entityFields={
-        new Map([
+       new Map([
           ['Catchment', 'Catchment'],
           ['Licence', 'Licence'],
           ['keyphrases', 'Key Phrases'],
-        ])}/>
+        ])} />
   </StaticRouter>
 
 ```
@@ -27,6 +32,7 @@ __2:__ SpotfireWebPlayer as a SearchResult but with filters from the Document
   const docs = require('../sampleData/Documents').default;
 
   // set properties to be used by this function but also to pass to the SpotfireWebPlayer react component
+  docs.spotfire.fields.set('spotfireEntitiesField', 'attivioEntities');
   docs.spotfire.fields.set('spotfire.file',['/Projects/Metadata Tools/Attivio Test Tool/Examples']);
   docs.spotfire.fields.set('spotfire_entities', ['{"attivioEntities":[{"type": "filter", "Filtering scheme": "attivio", "tableName": "Data Table (2)", "columnName": "attivio_DetectionMethod"},{"type": "property", "propertyName": "attivioUri"},{"type": "property", "propertyName": "attivioRunOnOpen"},{"type": "property", "propertyName": "attivioKeywords"}]}']);
   docs.spotfire.signal.query = "DetectionMethod:Tip"
@@ -48,9 +54,9 @@ __3:__ SpotfireWebPlayer as a SearchResult but with filters from the Document an
   const docs = require('../sampleData/Documents').default;
 
   // set properties to be used by this function but also to pass to the SpotfireWebPlayer react component
+  docs.spotfire.fields.set('spotfireEntitiesField', 'attivioEntities');
   docs.spotfire.fields.set('spotfire.file',['/Projects/Metadata Tools/Attivio Test Tool/Examples']);
   docs.spotfire.fields.set('spotfire_entities', ['{"attivioEntities":[{"type": "filter", "Filtering scheme": "attivio", "tableName": "Data Table (2)", "columnName": "attivio_DetectionMethod"},{"type": "property", "propertyName": "attivioUri"},{"type": "property", "propertyName": "attivioRunOnOpen"},{"type": "property", "propertyName": "attivioKeywords"}]}']);
-  docs.spotfire.fields.set('spotfire_startup_property', ['attivioRunOnOpen']);
   docs.spotfire.signal.query = "DetectionMethod:Tip"
 
   const { StaticRouter } = require('react-router-dom');

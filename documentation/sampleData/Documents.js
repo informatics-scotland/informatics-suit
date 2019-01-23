@@ -2495,13 +2495,13 @@ const spotfireJsons = [
   "suit.type": [
   "spotfire"
   ],
-  "spotfire.host": [
-  "http://sepa-app-spl01/spotfire/wp/"
+  "host": [
+  "http://sepa-app-spl01"
   ],
   "spotfire.file": [
   "/Projects/Metadata Tools/Tools/Companies House GOV UK"
   ],
-  "spotfire_entities": [
+  "attivioEntities": [
   '{"attivioEntities":[{"type": "property", "propertyName": "attivioCustomer"},{"type": "property", "propertyName": "attivioKeywords"},{"type": "property", "propertyName": "attivioRunOnOpen"}]}'],
   "catchment": [
   "Allan Water",
@@ -2581,6 +2581,7 @@ const sampleDocs = {
   elsalvador: documents[3],
   bolivia: documents[4],
   docWithChildren,
+  spotfireRawDocuments: spotfireDocuments,
   spotfire: spotfireDocuments[0],
 };
 

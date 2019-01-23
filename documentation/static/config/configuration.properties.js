@@ -408,17 +408,21 @@
     // document field name the holds the log in url if you are overriding the property declared above
     suitSpotfireLogInUrlField: 'spotfire.login.url',
     // document field name that holds the path to the spotfire tool
-    suitSpotfireHostFile: 'spotfire.file',
+    suitSpotfireFileField: 'spotfire.file',
+    // document field name that holds type of Spotfire tool
+    spotfireTypeField: 'suit.type',
     // document field name that holds spotfire entities JSON string 
-    entitiesField: "spotfire_entities",
+    spotfireEntitiesField: "spotfire_entities",
     // JSON Ojbect name that holds the array from the entitiesField
     attivioEntitiesField: "attivioEntities",    
     // document field name that holds column name for filtering Spotfire widget to appropriate data - only applies to widgets
     suitSpotfireIdField: 'spotfire.id.field',
     // path to widgets in the spotfire library
-    widgetHome: '/Projects/Metadata Tools/Widgets/',
-    // 
+    spotfireWidgetHome: '/Projects/Metadata Tools/Widgets/',
+    // property to call in Spotfire when opening a tool initially
     startUpProperty: "attivioRunOnOpen",
+    // name of column to use for general filtering i.e. not exact entity matches
+    generalFilterColumn: 'attivio_General_nometadata',
     // Default customisation settings for any Spotfire tool
     customizationInfo: {
       showTopHeader: false,

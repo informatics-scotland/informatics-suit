@@ -1,5 +1,6 @@
 // @flow
 import React from 'react';
+import PropTypes from 'prop-types';
 import Row from 'react-bootstrap/lib/Row';
 import Col from 'react-bootstrap/lib/Col';
 
@@ -10,12 +11,11 @@ import Configuration from './Configuration';
 import DocumentEntityList from './DocumentEntityList';
 import DocumentThumbnail from './DocumentThumbnail';
 import DocumentType from './DocumentType';
-import SearchResultTitle from './SearchResultTitle';
 import RelevancyScore from './RelevancyScore';
 import SearchResultBody from './SearchResultBody';
 import SearchResultTags from './SearchResultTags';
+import SearchResultTitle from './SearchResultTitle';
 import Signals from '../api/Signals';
-import PropTypes from 'prop-types';
 import StarRating from './StarRating';
 import TabPanel, { TabInfo } from './TabPanel';
 
@@ -103,7 +103,6 @@ class InnerListSearchResult extends React.Component<InnerListSearchResultDefault
     this.state = {
       currentTab: InnerListSearchResult.getFirstDocumentType(props.document.children),
     };
-
     (this: any).tabChanged = this.tabChanged.bind(this);
     (this: any).rateDocument = this.rateDocument.bind(this);
   }
@@ -127,6 +126,7 @@ class InnerListSearchResult extends React.Component<InnerListSearchResultDefault
     const docId = doc.getFirstValue('.id');
     const table = doc.getFirstValue('table');
     const thumbnailUri = doc.getFirstValue('thumbnailImageUri');
+    const previewUri = doc.getAllValues('previewImageUri');
     const scoreString = doc.getFirstValue(FieldNames.SCORE);
     const score = scoreString ? parseFloat(scoreString) : 0;
     const scoreDescription = doc.getFirstValue(FieldNames.SCORE_EXPLAIN);
@@ -195,7 +195,7 @@ class InnerListSearchResult extends React.Component<InnerListSearchResultDefault
       <div className=" attivio-search-result">
         <div className="attivio-search-result-col">
           <DocumentType docType={table} position={this.props.position} />
-          <DocumentThumbnail uri={thumbnailUri} />
+          <DocumentThumbnail uri={thumbnailUri} previewUris={previewUri} previewTitle={doc.getFirstValue(FieldNames.TITLE)} />
           <dl className="attivio-labeldata-stacked attivio-labeldata-stacked-search-results">
             {this.props.showRatings ? (
               <div>
@@ -230,5 +230,7 @@ class InnerListSearchResult extends React.Component<InnerListSearchResultDefault
 }
 
 const ListSearchResult = Configurable(InnerListSearchResult);
+
+ListSearchResult.renderer = InnerListSearchResult.renderer;
 
 export default ListSearchResult;
