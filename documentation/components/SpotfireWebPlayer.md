@@ -68,7 +68,6 @@ __3:__ SpotfireWebPlayer filtered using a query
   docs.spotfire.fields.set('spotfireEntitiesField', 'spotfire_entities');
   docs.spotfire.fields.set('spotfire.file',['/Projects/Metadata Tools/Attivio Test Tool/Examples']);
   docs.spotfire.fields.set('attivioEntities', ['{"attivioEntities":[{"type": "filter", "Filtering scheme": "attivio", "tableName": "Data Table (2)", "columnName": "attivio_DetectionMethod"},{"type": "property", "propertyName": "attivioUri"},{"type": "property", "propertyName": "attivioRunOnOpen"},{"type": "property", "propertyName": "attivioKeywords"}]}']);
-  docs.spotfire.signal.query = "DetectionMethod:Tip";
 
   // set properties to be used by this function but also to pass to the SpotfireWebPlayer react component
   // NOTE these would normally come from your configuration.properties.js
@@ -81,7 +80,7 @@ __3:__ SpotfireWebPlayer filtered using a query
   spotfireProps.spotfireEntitiesField = 'spotfire_entities';
   spotfireProps.generalFilterField = 'attivio_General_nometadata';
   spotfireProps.startUpProperty = "nothing";
-  //spotfireProps.query = "attivio_DetectionMethod:tip";
+  spotfireProps.query = "attivio_DetectionMethod:tip";
     
   <SpotfireWebPlayer document={docs.spotfire} entityFields={
        new Map([

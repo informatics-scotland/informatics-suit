@@ -5,6 +5,7 @@ import FieldNames from '../api/FieldNames';
 
 type SpotfireWebPlayerProps = {
   document: SearchDocument;
+  //query: string,
   host: string;
   file: string;
   loginUrl: string;
@@ -35,19 +36,20 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
 
   static defaultProps: SpotfireWebPlayerProps = {
     // properties set only to make test work
-    /*host: 'http://sepa-app-spl01',
+    host: 'http://sepa-app-spl01',
     loginUrl: 'http://sepa-app-spl01',
     spotfireTypeField: 'suit.type',
     suitSpotfireFileField: 'spotfire.file',
     spotfireEntitiesField: 'spotfire_entities',
-    startUpProperty: 'attivioRunOnOpen',*/
+    startUpProperty: 'attivioRunOnOpen',
     // end of properties for testing 
-    host: null,
+    /*host: null,
     loginUrl: null,
     spotfireTypeField: null,
     suitSpotfireFileField: null,
     spotfireEntitiesField: null,
-    startUpProperty: null,
+    startUpProperty: null,*/
+    query: '',
     file: '',
     guid: '',
     documentProperties: [],
@@ -99,12 +101,6 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
     const docId = doc.getFirstValue('.id');
     const table = doc.getFirstValue(FieldNames.TABLE);
 
-    // set properties to be used by this function but also to pass to the SpotfireWebPlayer react component
-    let spotfireEntities = '';
-    if (doc.getFirstValue(this.props.spotfireEntitiesField) !== ""){
-      spotfireEntities = doc.getFirstValue(this.props.spotfireEntitiesField);
-    }
-
     let toolType = this.props.toolType;
     if (doc.getFirstValue(this.props.spotfireTypeField) !== ""){
       toolType =  doc.getFirstValue(this.props.spotfireTypeField);
@@ -115,28 +111,21 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
       host = doc.getFirstValue(this.props.suitSpotfireHostField);
     }
 
-    let loginUrl = this.props.loginUrl;
-    if (doc.getFirstValue(this.props.suitSpotfireLogInUrlField) !== ""){
-      loginUrl = doc.getFirstValue(this.props.suitSpotfireLogInUrlField);
-    }
+    // Only needed if you have Spotfire logins
+    //let loginUrl = this.props.loginUrl;
+    //if (doc.getFirstValue(this.props.suitSpotfireLogInUrlField) !== ""){
+    //  loginUrl = doc.getFirstValue(this.props.suitSpotfireLogInUrlField);
+    //}
 
     // get path to Spotfire dxp
     let file = doc.getFirstValue(this.props.suitSpotfireFileField);
-
-    // grab the query ran or written by query frames so we can extract entities from it
-    let query = "";
-    if (doc.signal && doc.signal.query){
-      query = doc.signal.query;
-        //if (!this.props.query || this.props.query === ""){
-        //    spotfireProps.query = this.props.query;
-        //}
-    }
 
     let parameters = "initialLoad = False; "
     if (this.props.startUpProperty){
       parameters += this.props.startUpProperty  + " = \"" + Math.random().toString() + "\"; ";
     }
 
+    let spotfireEntities = this.getSpotfireEntities(doc);
     if (toolType === 'spotfire'){
       if (this.props.documentProperties && this.props.documentProperties.length > 0){
         parameters += this.constructPropertystring(this.props.documentProperties);
@@ -144,8 +133,9 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
       if (this.props.filters && this.props.filters.length > 0){
         parameters += this.constructFilterString(this.props.filters);
       }
-      else if (spotfireEntities && query !== ""){
-        let filtersAndProperties = this.matchEntities(this.parseSpotfireEntities(spotfireEntities), query);
+      else if (this.props.spotfireEntitiesField && this.props.spotfireEntitiesField !== "" && this.props.query !== ""){
+
+        let filtersAndProperties = this.matchEntities(this.parseSpotfireEntities(spotfireEntities), this.props.query);
         this.filters = filtersAndProperties.filters;
         this.documentProperties = filtersAndProperties.documentProperties;
         parameters += this.constructPropertystring(this.documentProperties);
@@ -186,6 +176,16 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
       return ((1 + Math.random()) * 0x10000 | 0).toString(16).substring(1);
     }
     return f() + f() + f() + f();
+  }
+
+  // get the Spotfire entities string out of the document
+  getSpotfireEntities(doc){
+    // set properties to be used by this function but also to pass to the SpotfireWebPlayer react component
+    let spotfireEntities = '';
+    if (doc.getFirstValue(this.props.spotfireEntitiesField) !== ""){
+      spotfireEntities = doc.getFirstValue(this.props.spotfireEntitiesField);
+    }
+    return spotfireEntities;
   }
 
   // parse the Spotfire entities to a JSON format
@@ -319,8 +319,6 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
       filters: filters,
       documentProperties: documentProperties
     };
-    //this.filters = filters;
-    //this.documentProperties = documentProperties;
 
   }
   
@@ -382,12 +380,12 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
     //const propertiesHaveChanged = JSON.stringify(this.props.documentProperties) !== JSON.stringify(nextProps.documentProperties);
 
     // have any filters changed?
-    if (thingsHaveChanged & this.props.toolType !== this.widget){
+    if (thingsHaveChanged & nextProps.toolType !== 'spotfire-widget'){
 
       // build array of filters to alter
       let filtersToModify = new Map();
       let startUpProperty = this.props.startUpProperty;
-      let filtersAndProperties = this.matchEntities(this.parseSpotfireEntities(nextProps.spotfireEntities), nextProps.query);
+      let filtersAndProperties = this.matchEntities(this.parseSpotfireEntities(this.getSpotfireEntities(this.props.document)), nextProps.query);
       
       // loop filters and apply
       filtersAndProperties.filters.forEach(filter =>
@@ -448,7 +446,8 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
       });    
     }
 
-    return thingsHaveChanged;
+    // always return false as we never want to rerender the component - it shoudl always update with Spotfire js calls
+    return false;
     
   }
 

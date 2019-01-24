@@ -88,6 +88,15 @@ export default class SpotfireSearchResult extends React.Component<SpotfireSearch
             showEntities = true;
         }  
 
+        // grab the query ran or written by query frames so we can extract entities from it
+        let searchQuery = "";
+        if (doc.signal && doc.signal.query){
+            searchQuery = doc.signal.query;
+            //if (!this.props.query || this.props.query === ""){
+            //    spotfireProps.query = this.props.query;
+            //}
+        }
+
         return (
         <div className="attivio-search-result row">
             <div className="attivio-search-result-content">
@@ -109,7 +118,7 @@ export default class SpotfireSearchResult extends React.Component<SpotfireSearch
             {this.props.showScores ? <dd><RelevancyScore score={score} explanation={scoreDescription} id={docId} /></dd> : ''}
             <Row>
                 <Col xs={showEntities ? 9 : 12} sm={showEntities ? 9 : 12}>
-                <SpotfireWebPlayer document={doc} entityFields={entityFields} />
+                <SpotfireWebPlayer document={doc} entityFields={entityFields} query={searchQuery} />
                 <SearchResultTags tags={docTags} docId={docId} view360Label={show360Link} />
                 </Col>
                 {showEntities ? <Col xs={3} sm={3}>
