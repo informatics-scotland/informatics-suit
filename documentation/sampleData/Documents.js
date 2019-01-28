@@ -2502,7 +2502,8 @@ const spotfireJsons = [
   "/Projects/Metadata Tools/Tools/Companies House GOV UK"
   ],
   "attivioEntities": [
-  '{"attivioEntities":[{"type": "property", "propertyName": "attivioCustomer"},{"type": "property", "propertyName": "attivioKeywords"},{"type": "property", "propertyName": "attivioRunOnOpen"}]}'],
+  '{"attivioEntities":[{"type": "property", "propertyName": "attivioCustomer"},{"type": "property", "propertyName": "attivioKeywords"},{"type": "property", "propertyName": "attivioRunOnOpen"}]}'
+  ],
   "catchment": [
   "Allan Water",
   "Bervie Water",

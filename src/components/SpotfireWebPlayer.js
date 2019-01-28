@@ -64,14 +64,14 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
     toolType: 'spotfire',
     customizationInfo: {
       showTopHeader: false,
-      showToolBar: false,
+      showToolBar: true,
       showExportFile: true,
       showExportVisualization: true,
       showCustomizableHeader: false,
       showPageNavigation: false,
       showStatusBar: false,
       showDodPanel: false,
-      showFilterPanel: false,
+      showFilterPanel: true,
       showAbout: false,
       showAnalysisInformationTool: false,
       showAuthor: false,
@@ -131,7 +131,7 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
         parameters += this.constructPropertystring(this.props.documentProperties);
       }
       if (this.props.filters && this.props.filters.length > 0){
-        parameters += this.constructFilterString(this.props.filters);
+        parameters += this.constructFilterString(this.props.filters, this.props.generalFilterColumn);
       }
       else if (this.props.spotfireEntitiesField && this.props.spotfireEntitiesField !== "" && this.props.query !== ""){
 
@@ -139,7 +139,7 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
         this.filters = filtersAndProperties.filters;
         this.documentProperties = filtersAndProperties.documentProperties;
         parameters += this.constructPropertystring(this.documentProperties);
-        parameters += this.constructFilterString(this.filters);
+        parameters += this.constructFilterString(this.filters, this.props.generalFilterColumn);
       }
     }
     else if (toolType === 'spotfire-widget'){
@@ -154,7 +154,7 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
       this.filters = filtersAndProperties.filters;
       this.documentProperties = filtersAndProperties.documentProperties;
       parameters += this.constructPropertystring(this.documentProperties);
-      parameters += this.constructFilterString(this.filters);
+      parameters += this.constructFilterString(this.filters, this.props.generalFilterColumn);
     }
 
     spotfire.webPlayer.createApplication(
@@ -300,17 +300,17 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
       
       if (countOfEntityFieldsFounds === 0 && query != ''){
 
-        /*spotfireEntityFields.forEach((spotfireEntity) => {
+        spotfireEntityFields.forEach((spotfireEntity) => {
 
-          if (spotfireEntity.columnName === this.props.generalFilterField){
+          if (spotfireEntity.columnName === this.props.generalFilterColumn){
             filters.push({
               scheme: spotfireEntity.filterScheme,
               table: spotfireEntity.tableName,
-              column: this.props.generalFilterField,
+              column: this.props.generalFilterColumn,
               values: [query],
             });
           }
-        });*/
+        });
       }
 
     }
@@ -342,7 +342,7 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
   }
 
   // generate the required parameter string for the tool
-  constructFilterString(filterObjects) {
+  constructFilterString(filterObjects, generalFilterColumn) {
   
     const filterString = filterObjects.reduce(function (acc, filter) {
       if (filter.table && filter.column && filter.values) {
@@ -354,8 +354,9 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
             let valuesString = "{" + values.join(',') + "}";
             let filterMethod = "values";
   
-            if (filter.column === "attivio_General_nometadata"){
+            if (filter.column === generalFilterColumn){
               filterMethod = "searchPattern";
+              valuesString = "\"*" + filter.values[0] + "*\"";
             }
             
             return acc + "SetFilter(tableName=\"" + filter.table + "\", columnName=\"" + filter.column + "\", " + filterMethod + "=" + valuesString + ");";
@@ -446,7 +447,7 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
       });    
     }
 
-    // always return false as we never want to rerender the component - it shoudl always update with Spotfire js calls
+    // always return false as we never want to rerender the component - it should always update with Spotfire js calls
     return false;
     
   }
