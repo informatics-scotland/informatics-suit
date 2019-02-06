@@ -177,3 +177,35 @@ __6:__ SpotfireWebPlayer setting a property (in this example this triggers a pag
 
   <SpotfireWebPlayer document={docs.spotfire} {...spotfireProps}/>
 ```
+
+__7:__ SpotfireWebPlayer set property using a generic non entity matched query
+
+```jsx
+
+  const docs = require('../sampleData/Documents').default;
+  docs.spotfire.fields.set('spotfireEntitiesField', 'spotfire_entities');
+  docs.spotfire.fields.set('spotfire.file',['/Projects/Metadata Tools/Attivio Test Tool/Examples']);
+  docs.spotfire.fields.set('spotfire_entities', ['{"attivioEntities":[{"type": "filter", "Filtering scheme": "attivio", "tableName": "Data Table (2)", "columnName": "attivio_DetectionMethod"},{"type": "filter", "Filtering scheme": "attivio", "tableName": "Data Table (2)", "columnName": "attivio_General_nometadata"},{"type": "property", "propertyName": "attivioUri"},{"type": "property", "propertyName": "attivioRunOnOpen"},{"type": "property", "propertyName": "attivioKeywords"},{"type": "property", "propertyName": "attivioGeneral"}]}']);
+
+  // set properties to be used by this function but also to pass to the SpotfireWebPlayer react component
+  // NOTE these would normally come from your configuration.properties.js
+  const spotfireProps = {}
+  spotfireProps.host =  docs.spotfire.getFirstValue('host');
+  spotfireProps.loginUrl = docs.spotfire.getFirstValue('login.url');
+  spotfireProps.toolType = docs.spotfire.getFirstValue('suit.type');
+  spotfireProps.suitSpotfireIdField = 'spotfire.id.field';
+  spotfireProps.suitSpotfireFile = 'spotfire.file';
+  spotfireProps.spotfireEntitiesField = 'spotfire_entities';
+  spotfireProps.generalFilterColumn = 'nothing';
+  spotfireProps.generalPropertyName = 'attivioGeneral';
+  spotfireProps.startUpProperty = "nothing";
+  spotfireProps.query = "accident";
+    
+  <SpotfireWebPlayer document={docs.spotfire} entityFields={
+       new Map([
+          ['Catchment', 'Catchment'],
+          ['Licence', 'Licence'],
+          ['keyphrases', 'Key Phrases'],
+          ['DetectionMethod', 'DetectionMethod'],
+        ])} {...spotfireProps} />
+```

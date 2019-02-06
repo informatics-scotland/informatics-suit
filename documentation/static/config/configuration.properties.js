@@ -423,6 +423,8 @@
     startUpProperty: "attivioRunOnOpen",
     // name of column to use for general filtering i.e. not exact entity matches
     generalFilterColumn: 'attivio_General_nometadata',
+    // name of property to use for general filtering or actions i.e. not a start up property
+    generalPropertyName: 'attivioGeneral',
     // Default customisation settings for any Spotfire tool
     customizationInfo: {
       showTopHeader: false,

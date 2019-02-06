@@ -116,6 +116,7 @@ export default class SpotfireSearchResult extends React.Component<SpotfireSearch
             : null}
             {this.props.showScores ? <dt>Relevancy Score</dt> : ''}
             {this.props.showScores ? <dd><RelevancyScore score={score} explanation={scoreDescription} id={docId} /></dd> : ''}
+            <br style={{ clear: 'both' }} />
             <Row>
                 <Col xs={showEntities ? 9 : 12} sm={showEntities ? 9 : 12}>
                 <SpotfireWebPlayer document={doc} entityFields={entityFields} query={searchQuery} />

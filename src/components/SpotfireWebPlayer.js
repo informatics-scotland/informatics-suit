@@ -24,6 +24,7 @@ type SpotfireWebPlayerProps = {
   toolType: 'spotfire' | 'spotfire-widget';
   startUpProperty: string;
   generalFilterColumn: string;
+  generalPropertyName: string;
   customizationInfo: object;
 }
 
@@ -58,20 +59,20 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
     suitSpotfireLogInUrlField: null,
     suitSpotfireIdField: null,
     spotfireWidgetHome: null,
-    startUpProperty: null,
     generalFilterColumn: null,
+    generalPropertyName: null,
     entityFields: new Map(),
     toolType: 'spotfire',
     customizationInfo: {
       showTopHeader: false,
-      showToolBar: true,
+      showToolBar: false,
       showExportFile: true,
       showExportVisualization: true,
       showCustomizableHeader: false,
       showPageNavigation: false,
       showStatusBar: false,
       showDodPanel: false,
-      showFilterPanel: true,
+      showFilterPanel: false,
       showAbout: false,
       showAnalysisInformationTool: false,
       showAuthor: false,
@@ -248,6 +249,7 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
         if (spotfireEntity.type === "property"){
           keyName = spotfireEntity.propertyName;
         }
+        let startUpProperty = this.props.startUpProperty;
       
         // remove attivo prefix from key
         let fieldNameRegex = new RegExp("attivio_?", "gi");
@@ -295,20 +297,32 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
               }
             }
           }
-        }, spotfireEntity);     
+        }, spotfireEntity, startUpProperty);     
       });
       
       if (countOfEntityFieldsFounds === 0 && query != ''){
 
         spotfireEntityFields.forEach((spotfireEntity) => {
 
-          if (spotfireEntity.columnName === this.props.generalFilterColumn){
-            filters.push({
-              scheme: spotfireEntity.filterScheme,
-              table: spotfireEntity.tableName,
-              column: this.props.generalFilterColumn,
-              values: [query],
-            });
+          if  (spotfireEntity.type === "filter"){
+            if (spotfireEntity.columnName === this.props.generalFilterColumn){
+              filters.push({
+                scheme: spotfireEntity.filterScheme,
+                table: spotfireEntity.tableName,
+                column: this.props.generalFilterColumn,
+                values: [query],
+              });
+            }
+          }
+          else if (spotfireEntity.type === "property"){
+
+            let documentPropertyValue = query;
+            if (spotfireEntity.propertyName === this.props.generalPropertyName){
+              documentProperties.push({
+                name: this.props.generalPropertyName,
+                value: documentPropertyValue
+              });
+            }
           }
         });
       }
@@ -332,7 +346,7 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
           return acc + property.name + " = " + property.value + ";";
         }
         else{
-          return acc + property.name + " = '" + property.value + "';";
+          return acc + property.name + ' = "' + property.value + '";';
         }
       }
       return acc;
@@ -356,7 +370,7 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
   
             if (filter.column === generalFilterColumn){
               filterMethod = "searchPattern";
-              valuesString = "\"*" + filter.values[0] + "*\"";
+              valuesString = "\"*" + filter.values[0].replace(" ", "*") + "*\"";
             }
             
             return acc + "SetFilter(tableName=\"" + filter.table + "\", columnName=\"" + filter.column + "\", " + filterMethod + "=" + valuesString + ");";
@@ -385,7 +399,6 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
 
       // build array of filters to alter
       let filtersToModify = new Map();
-      let startUpProperty = this.props.startUpProperty;
       let filtersAndProperties = this.matchEntities(this.parseSpotfireEntities(this.getSpotfireEntities(this.props.document)), nextProps.query);
       
       // loop filters and apply
@@ -431,21 +444,28 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
           spotfireWebPlayer.filtering.setFilter(newFilter, newFilter.filteringOperation);
           console.log("Applying filter... " + newFilter.dataColumnName);
         };
-
-        // change the run on open to trigger any filter actions required such as zoom map
-        spotfireWebPlayer.setDocumentProperty(startUpProperty, Math.random().toString());
         
       });
+
+      // loop document properties and apply
+      filtersAndProperties.documentProperties.forEach(documentProperty =>
+      {
+        // change the run on open to trigger any filter actions required such as zoom map
+        if (documentProperty.name === this.props.startUpProperty){
+          documentProperty.value = Math.random().toString();
+        }
+        spotfireWebPlayer.analysisDocument.setDocumentProperty(documentProperty.name, documentProperty.value);
+      }, spotfireWebPlayer);
     
     }
 
     // have any properties changed?
-    if (thingsHaveChanged){
+    /*if (thingsHaveChanged){
      nextProps.documentProperties.forEach(documentProperty => 
       {
         this.app.analysisDocument.setDocumentProperty(documentProperty.name, documentProperty.value);
       });    
-    }
+    }*/
 
     // always return false as we never want to rerender the component - it should always update with Spotfire js calls
     return false;
@@ -506,9 +526,9 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
   */
 
   componentWillUnmount() {
-    if (this.app) {
-      this.app.close();
-    }
+    //if (this.app) {
+    //  this.app.close();
+    //}
   }
 
   onClosedCallback(path) {
@@ -518,7 +538,7 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
   render() {
     var spotfireStyle = { height: 480, display: 'none' };
     if (this.state.isLoaded || this.state.isInitializing) {
-      spotfireStyle = { height: 480, display: 'block' };
+      spotfireStyle = { height: 480, display: 'block'};
     }
     const loginLink = this.state.requiresLogin ?
       (<p><a href={this.props.loginUrl} target="_blank">Sign into Spotfire and refresh this page.</a></p>) : (<span />);
