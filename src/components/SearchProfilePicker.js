@@ -26,7 +26,7 @@ export default class SearchProfilePicker extends React.Component<SearchProfilePi
   static defaultProps = {
     initialValue: '',
     label: 'Search Profile:',
-    profiles: ["All Sources", "Metals Sector Plan"], // move this to config file in future
+    profiles: ["All Sources", "Metals Sector Plan", "Metals Sector Inspection"], // move this to config file in future
     right: false,
   };
 

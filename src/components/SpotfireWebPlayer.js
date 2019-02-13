@@ -1,3 +1,5 @@
+// @flow
+
 import React from 'react';
 import Configurable from './Configurable';
 import SearchDocument from '../api/SearchDocument';
@@ -5,7 +7,7 @@ import FieldNames from '../api/FieldNames';
 
 type SpotfireWebPlayerProps = {
   document: SearchDocument;
-  //query: string,
+  query: string,
   host: string;
   file: string;
   loginUrl: string;
@@ -21,7 +23,7 @@ type SpotfireWebPlayerProps = {
   spotfireWidgetHome: string,
   /** A map of the field names to the label to use for any entity fields */
   entityFields: Map<string, string>;
-  toolType: 'spotfire' | 'spotfire-widget';
+  toolType: 'spotfire' | 'spotfire-widget' | 'spotfire-tool';
   startUpProperty: string;
   generalFilterColumn: string;
   generalPropertyName: string;
@@ -41,15 +43,17 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
     loginUrl: 'http://sepa-app-spl01',
     spotfireTypeField: 'suit.type',
     suitSpotfireFileField: 'spotfire.file',
-    spotfireEntitiesField: 'spotfire_entities',
-    startUpProperty: 'attivioRunOnOpen',
+    spotfireEntitiesField: 'spotfireEntities',
+    startUpProperty: 'attivioConfiguration',
+    generalFilterColumn: 'General_nometadata',
     // end of properties for testing 
     /*host: null,
     loginUrl: null,
     spotfireTypeField: null,
     suitSpotfireFileField: null,
     spotfireEntitiesField: null,
-    startUpProperty: null,*/
+    startUpProperty: null,
+    generalFilterColumn: null,*/
     query: '',
     file: '',
     guid: '',
@@ -59,7 +63,6 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
     suitSpotfireLogInUrlField: null,
     suitSpotfireIdField: null,
     spotfireWidgetHome: null,
-    generalFilterColumn: null,
     generalPropertyName: null,
     entityFields: new Map(),
     toolType: 'spotfire',
@@ -122,25 +125,14 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
     let file = doc.getFirstValue(this.props.suitSpotfireFileField);
 
     let parameters = "initialLoad = False; "
-    if (this.props.startUpProperty){
-      parameters += this.props.startUpProperty  + " = \"" + Math.random().toString() + "\"; ";
+    if (this.props.startUpProperty && this.props.query !== ""){
+      parameters += this.props.startUpProperty  + " = \"" + this.generateSpotfireJSONConfig(this.props.query) + "\"; ";
     }
 
     let spotfireEntities = this.getSpotfireEntities(doc);
     if (toolType === 'spotfire'){
-      if (this.props.documentProperties && this.props.documentProperties.length > 0){
-        parameters += this.constructPropertystring(this.props.documentProperties);
-      }
-      if (this.props.filters && this.props.filters.length > 0){
-        parameters += this.constructFilterString(this.props.filters, this.props.generalFilterColumn);
-      }
-      else if (this.props.spotfireEntitiesField && this.props.spotfireEntitiesField !== "" && this.props.query !== ""){
-
-        let filtersAndProperties = this.matchEntities(this.parseSpotfireEntities(spotfireEntities), this.props.query);
-        this.filters = filtersAndProperties.filters;
-        this.documentProperties = filtersAndProperties.documentProperties;
-        parameters += this.constructPropertystring(this.documentProperties);
-        parameters += this.constructFilterString(this.filters, this.props.generalFilterColumn);
+      if (this.props.startUpProperty && this.props.spotfireEntities){
+        parameters += this.props.startUpProperty + " = \"" + JSON.stringify(this.props.spotfireEntities).replace(/"/g, '\\"') + "\"; ";
       }
     }
     else if (toolType === 'spotfire-widget'){
@@ -229,133 +221,38 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
 
   }
 
-  matchEntities(spotfireEntityFields, query){
+  generateSpotfireJSONConfig(query){
 
-    // create array of filters
-    let filters = [];
-    let documentProperties = [];
-  
-    // compare attivio entity fields with Spotfire entities to find matching filters
-    if (spotfireEntityFields.length > 0){
+    let spotfireJson = {};
 
-      let countOfEntityFieldsFounds = 0;
-      
-      spotfireEntityFields.forEach((spotfireEntity) => {
+    // is the query matching an entity?
+    this.props.entityFields.forEach(function (fieldLabel, fieldName) {
 
-        // extract value to pass based upon Spotfire type
-        let spotfireValues = [];
+      let queryLower = query.toLowerCase();
+      let fieldNameLower = fieldName.toLowerCase();
 
-        let keyName = spotfireEntity.columnName;
-        if (spotfireEntity.type === "property"){
-          keyName = spotfireEntity.propertyName;
-        }
-        let startUpProperty = this.props.startUpProperty;
-      
-        // remove attivo prefix from key
-        let fieldNameRegex = new RegExp("attivio_?", "gi");
-        keyName = keyName.replace(fieldNameRegex, "");
+      if (queryLower.includes(fieldNameLower + ":")){
 
-        this.props.entityFields.forEach(function (fieldLabel, fieldName) {
+        // set the regex for getting the searched for values out the query frame
+        let queryRegex = new RegExp(".*" + fieldNameLower + ":or\\(\"?([A-z0-9 -_]+?)\"?\\).*$", "gi");
+        // this handle queries in the form of entity:value
+        let queryRegex2 = new RegExp(".*" + fieldNameLower + ":([A-z0-9 -_]+?)", "gi");
+        // get the values out
+        let queryValues = queryLower.replace(queryRegex,'$1').replace(queryRegex2, '$1');
 
-          // set the regex for getting the searched for values out the query frame
-          let queryRegex = new RegExp(".*" + fieldName.toLowerCase() + ":or\\(\"?([A-z0-9 -_]+?)\"?\\).*$", "gi");
-          // this handle queries in the form of entity:value
-          let queryRegex2 = new RegExp(".*" + fieldName.toLowerCase() + ":([A-z0-9 -_]+?)", "gi");
-          // get the values out
-          let queryValues = query.replace(queryRegex,'$1').replace(queryRegex2, '$1');
-
-          // if we have a match on name - the spotfire tool can be filtered by this entity
-          if (fieldName.toLowerCase() === keyName.toLowerCase() && query.includes(fieldName + ":")){
-
-            if (queryValues){
-              if (spotfireEntity.type === "filter"){
-
-                // add the values to the array
-                spotfireValues.push(queryValues.toLowerCase());
-
-                // make the filter object and push it into the filters array
-                filters.push({
-                  scheme: spotfireEntity.filterScheme,
-                  table: spotfireEntity.tableName,
-                  column: spotfireEntity.columnName,
-                  values: spotfireValues,
-                });
-
-                countOfEntityFieldsFounds++;
-              }
-              else if (spotfireEntity.type === "property"){
-
-                let documentPropertyValue = queryValues;
-                if (spotfireEntity.propertyName !== startUpProperty){
-                  documentProperties.push({
-                    name: spotfireEntity.propertyName,
-                    value: documentPropertyValue
-                  });
-
-                  countOfEntityFieldsFounds++;
-                }
-              }
-            }
-          }
-        }, spotfireEntity, startUpProperty);     
-      });
-      
-      if (countOfEntityFieldsFounds === 0 && query != ''){
-
-        spotfireEntityFields.forEach((spotfireEntity) => {
-
-          if  (spotfireEntity.type === "filter"){
-            if (spotfireEntity.columnName === this.props.generalFilterColumn){
-              filters.push({
-                scheme: spotfireEntity.filterScheme,
-                table: spotfireEntity.tableName,
-                column: this.props.generalFilterColumn,
-                values: [query],
-              });
-            }
-          }
-          else if (spotfireEntity.type === "property"){
-
-            let documentPropertyValue = query;
-            if (spotfireEntity.propertyName === this.props.generalPropertyName){
-              documentProperties.push({
-                name: this.props.generalPropertyName,
-                value: documentPropertyValue
-              });
-            }
-          }
-        });
+        // capitalise first letter for field name to match Spotfire column naming convention
+        spotfireJson[fieldName.charAt(0).toUpperCase() + fieldName.slice(1)] = queryValues;
       }
+    });
 
+    if (Object.entries(spotfireJson).length === 0 && spotfireJson.constructor === Object){
+      spotfireJson[this.props.generalFilterColumn] = query.toLowerCase();
     }
 
-    return { 
-      filters: filters,
-      documentProperties: documentProperties
-    };
-
-  }
-  
-  // generate the required parameter string for the tool
-  constructPropertystring(propertyObjects){
-
-    const propertyString = propertyObjects.reduce(function (acc, property) {
-      if (property.name && property.value) {
-        // check for a type
-        if (property.type && property.type !== 'string'){
-          return acc + property.name + " = " + property.value + ";";
-        }
-        else{
-          return acc + property.name + ' = "' + property.value + '";';
-        }
-      }
-      return acc;
-    }, '');
-    return propertyString;
-
+    return JSON.stringify(spotfireJson).replace(/"/g, '\\"');
   }
 
-  // generate the required parameter string for the tool
+    // generate the required parameter string for the tool
   constructFilterString(filterObjects, generalFilterColumn) {
   
     const filterString = filterObjects.reduce(function (acc, filter) {
@@ -391,81 +288,16 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
     }
 
     const thingsHaveChanged = this.props.query != nextProps.query;
-    //const filtersHaveChanged = JSON.stringify(this.props.filters) !== JSON.stringify(nextProps.filters);
-    //const propertiesHaveChanged = JSON.stringify(this.props.documentProperties) !== JSON.stringify(nextProps.documentProperties);
 
     // have any filters changed?
     if (thingsHaveChanged & nextProps.toolType !== 'spotfire-widget'){
 
-      // build array of filters to alter
-      let filtersToModify = new Map();
-      let filtersAndProperties = this.matchEntities(this.parseSpotfireEntities(this.getSpotfireEntities(this.props.document)), nextProps.query);
-      
-      // loop filters and apply
-      filtersAndProperties.filters.forEach(filter =>
-      {
+      let newConfig = generateSpotfireJSONConfig(nextProps.query);
 
-        // set up a filter object with the new values
-        let spotfireFilter = {
-					filteringSchemeName: filter.scheme,
-					dataTableName: filter.table,
-					dataColumnName: filter.column,
-					filteringOperation: spotfire.webPlayer.filteringOperation.REPLACE,
-					filterSettings: {
-						includeEmpty: false,
-						values: filter.values
-          }
-        };
-        
-        filtersToModify.set(spotfireFilter.dataColumnName,spotfireFilter);
-      });
-
-      // first clear existing filters
-      var spotfireWebPlayer = this.app;
-      spotfireWebPlayer.filtering.getAllModifiedFilterColumns(spotfire.webPlayer.includedFilterSettings.NONE, function(filterColumns){ 
-        console.log(filterColumns.length);
-        if (filterColumns && filterColumns.length > 0){
-          filterColumns.forEach(filter => {
-            // check it is an attivio column (as we don't want to clear other filters)
-            if (filter.dataColumnName.substring(0, 8) === "attivio_" && !filtersToModify.has(filter.dataColumnName)){
-              filter.filterSettings = {
-                includeEmpty: true
-              }
-              filter.filteringOperation = spotfire.webPlayer.filteringOperation.RESET;
-              filtersToModify.set(filter.dataColumnName, filter);
-              console.log("Resetting... " + filter.dataColumnName);
-            }
-          });
-        }
-
-        // now loop all filters to change and apply
-        // This must live within the callback of get all modified filters, otherwise it runs before the reset happens
-        for (var newFilter of filtersToModify.values()) {
-          spotfireWebPlayer.filtering.setFilter(newFilter, newFilter.filteringOperation);
-          console.log("Applying filter... " + newFilter.dataColumnName);
-        };
-        
-      });
-
-      // loop document properties and apply
-      filtersAndProperties.documentProperties.forEach(documentProperty =>
-      {
-        // change the run on open to trigger any filter actions required such as zoom map
-        if (documentProperty.name === this.props.startUpProperty){
-          documentProperty.value = Math.random().toString();
-        }
-        spotfireWebPlayer.analysisDocument.setDocumentProperty(documentProperty.name, documentProperty.value);
-      }, spotfireWebPlayer);
+      // get the Spotfire app
+      this.app.setDocumentProperty(this.props.startUpProperty, newConfig);
     
     }
-
-    // have any properties changed?
-    /*if (thingsHaveChanged){
-     nextProps.documentProperties.forEach(documentProperty => 
-      {
-        this.app.analysisDocument.setDocumentProperty(documentProperty.name, documentProperty.value);
-      });    
-    }*/
 
     // always return false as we never want to rerender the component - it should always update with Spotfire js calls
     return false;

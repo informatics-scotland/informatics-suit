@@ -412,7 +412,7 @@
     // document field name that holds type of Spotfire tool
     spotfireTypeField: 'suit.type',
     // document field name that holds spotfire entities JSON string 
-    spotfireEntitiesField: "spotfire_entities",
+    spotfireEntitiesField: "spotfireEntities",
     // JSON Ojbect name that holds the array from the entitiesField
     attivioEntitiesField: "attivioEntities",    
     // document field name that holds column name for filtering Spotfire widget to appropriate data - only applies to widgets
