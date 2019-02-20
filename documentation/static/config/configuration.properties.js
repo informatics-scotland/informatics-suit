@@ -228,7 +228,7 @@
    */
   Searcher: {
     // The workflow to use for executing searches
-    searchWorkflow: 'search',
+    searchWorkflow: 'nlpSearch',
     // The number of results to show per page
     resultsPerPage: 10,
     // An ordered list of facet requests to use for each query; facet expressions are also supported
@@ -236,11 +236,18 @@
       'position',
       'keyphrases(maxbuckets=15)',
       'table',
+      'sector',
+      'customer',
+      'source',
       'tags',
-      'company',
-      'people',
-      'location',
+      'hashtags',
+      'catchment',
+      'local_authority',
+      'team',
+      'site',
+      'licence',
       'date(sortby=VALUE,maxbuckets=60,dateIntervals=auto)',
+      'mentions'
     ],
     // The maximum number of facets the Facet Finder attempts to add to the query. Set this to 0 to turn off Facet Finder.
     facetFinderCount: 20,
@@ -259,6 +266,8 @@
     // The name of the Business Center profile to use for queries. If set, this will enable Profile level
     // campaigns and promotions.
     businessCenterProfile: 'Attivio',
+    // An optional field collapse parameter to set for queries
+    fieldCollapse: '',
   },
 
   /**
@@ -409,22 +418,22 @@
     suitSpotfireLogInUrlField: 'spotfire.login.url',
     // document field name that holds the path to the spotfire tool
     suitSpotfireFileField: 'spotfire.file',
+    // Document field name that holds the Spotfire tool name
+    suitSpotfireToolField: 'tool',
     // document field name that holds type of Spotfire tool
     spotfireTypeField: 'suit.type',
     // document field name that holds spotfire entities JSON string 
-    spotfireEntitiesField: "spotfireEntities",
-    // JSON Ojbect name that holds the array from the entitiesField
-    attivioEntitiesField: "attivioEntities",    
-    // document field name that holds column name for filtering Spotfire widget to appropriate data - only applies to widgets
-    suitSpotfireIdField: 'spotfire.id.field',
+    spotfireEntitiesField: "spotfireEntities",   
     // path to widgets in the spotfire library
     spotfireWidgetHome: '/Projects/Metadata Tools/Widgets/',
+    // path to widgets in the spotfire library
+    spotfireToolHome: '/Projects/Metadata Tools/Tools/',
     // property to call in Spotfire when opening a tool initially
-    startUpProperty: "attivioRunOnOpen",
+    startUpProperty: "attivioConfiguration",
     // name of column to use for general filtering i.e. not exact entity matches
-    generalFilterColumn: 'attivio_General_nometadata',
-    // name of property to use for general filtering or actions i.e. not a start up property
-    generalPropertyName: 'attivioGeneral',
+    generalQueryName: 'General_nometadata',
+    // Spotfire consutimsation object to configure your Spotfire component
+    widgetIdField: 'Id',
     // Default customisation settings for any Spotfire tool
     customizationInfo: {
       showTopHeader: false,

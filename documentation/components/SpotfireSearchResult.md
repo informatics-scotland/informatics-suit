@@ -6,13 +6,10 @@ If the `suit.type` field is `spotfire`, the `SearchResult` should render as a Sp
   const docs = require('../sampleData/Documents').default;
 
   // set properties to be used by this function but also to pass to the SpotfireWebPlayer react component
-  docs.spotfire.fields.set('suitSpotfireIdField', 'spotfire.id.field');
   docs.spotfire.fields.set('suitSpotfireFileField', 'spotfire.file');
   docs.spotfire.fields.set('suitSpotfireHost', 'spotfire.host');
   docs.spotfire.fields.set('suitSpotfireLoginUrl', 'spotfire.login.url');
   docs.spotfire.fields.set('spotfire.file',['/Projects/Metadata Tools/Attivio Test Tool/Examples']);
-  //docs.spotfire.fields.set('spotfire_entities', ['{"attivioEntities":[{"type": "filter", "Filtering scheme": "attivio", "tableName": "Data Table (2)", "columnName": "attivio_DetectionMethod"},{"type": "property", "propertyName": "attivioUri"},{"type": "property", "propertyName": "attivioRunOnOpen"},{"type": "property", "propertyName": "attivioKeywords"}]}']);
-  docs.spotfire.fields.set('generalFilterColumn','General_nometadata');
   docs.spotfire.signal.query = "";
 
   const { StaticRouter } = require('react-router-dom');
@@ -34,7 +31,6 @@ __2:__ SpotfireWebPlayer as a SearchResult but with filters from the Document
 
   // set properties to be used by this function but also to pass to the SpotfireWebPlayer react component
   docs.spotfire.fields.set('spotfire.file',['/Projects/Metadata Tools/Attivio Test Tool/Examples']);
-  //docs.spotfire.fields.set('spotfire_entities', ['{"attivioEntities":[{"type": "filter", "Filtering scheme": "attivio", "tableName": "Data Table (2)", "columnName": "attivio_DetectionMethod"},{"type": "property", "propertyName": "attivioUri"},{"type": "property", "propertyName": "attivioRunOnOpen"},{"type": "property", "propertyName": "attivioKeywords"}]}']);
   docs.spotfire.signal.query = "DetectionMethod:tip";
 
   const { StaticRouter } = require('react-router-dom');
@@ -55,7 +51,6 @@ __3:__ SpotfireWebPlayer as a SearchResult but with filters not matching an enti
 
   // set properties to be used by this function but also to pass to the SpotfireWebPlayer react component
   docs.spotfire.fields.set('spotfire.file',['/Projects/Metadata Tools/Attivio Test Tool/Examples']);
-  //docs.spotfire.fields.set('spotfire_entities', ['{"attivioEntities":[{"type": "filter", "Filtering scheme": "attivio", "tableName": "Data Table (2)", "columnName": "attivio_DetectionMethod"},{"type": "property", "propertyName": "attivioUri"},{"type": "property", "propertyName": "attivioRunOnOpen"},{"type": "property", "propertyName": "attivioTest"}]}']);
   docs.spotfire.signal.query = "accident";
 
   const { StaticRouter } = require('react-router-dom');

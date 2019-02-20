@@ -81,6 +81,8 @@ type SearcherProps = {
   highlightResults: 'on' | 'off' | 'all';
   /** The join rollup mode to use. Defaults to 'TREE'. */
   joinRollupMode: 'TREE' | 'AGGREGATE' | 'SQL';
+  /** An optional field collapse setting to pass with all queries */
+  fieldCollapse?: string | null;
   /** An optional locale to use for the search. */
   locale?: string | null;
   /** The default language to use for querying. Defaults to 'simple' if not specified. */
@@ -156,6 +158,7 @@ type SearcherDefaultProps = {
   queryFilter: string | null;
   highlightResults: 'on' | 'off' | 'all';
   joinRollupMode: 'TREE' | 'AGGREGATE' | 'SQL';
+  fieldCollapse: null;
   locale: string | null;
   title: string;
   uri: string;
@@ -271,6 +274,7 @@ class Searcher extends React.Component<SearcherDefaultProps, SearcherProps, Sear
     queryFilter: null,
     highlightResults: 'on',
     joinRollupMode: 'TREE',
+    fieldCollapse: null,
     locale: null,
     title: FieldNames.TITLE,
     uri: FieldNames.URI,
@@ -450,6 +454,7 @@ class Searcher extends React.Component<SearcherDefaultProps, SearcherProps, Sear
       restParams.set('facet.ffcount', [this.props.facetFinderCount.toString(10)]);
     }
     restParams.set('join.rollup', [this.props.joinRollupMode]);
+    restParams.set('collapse',[this.props.fieldCollapse]);
     const businessCenterProfile = this.getBusinessCenterProfile();
     if (businessCenterProfile) {
     //if (this.props.businessCenterProfile){
