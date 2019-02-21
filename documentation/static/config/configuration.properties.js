@@ -420,6 +420,8 @@
     suitSpotfireFileField: 'spotfire.file',
     // Document field name that holds the Spotfire tool name
     suitSpotfireToolField: 'tool',
+    // Document field name that holds an (Optional) widget name instead of using the table name for certain widgets
+    spotfireWidgetNameField: 'spotfire.widget.name', 
     // document field name that holds type of Spotfire tool
     spotfireTypeField: 'suit.type',
     // document field name that holds spotfire entities JSON string 

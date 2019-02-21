@@ -30,6 +30,8 @@ type SpotfireWebPlayerProps = {
   suitSpotfireFileField: string,
   /** Document field name that holds the Spotfire tool name */
   suitSpotfireToolField: string,
+  /** Document field name that holds an (Optional) widget name instead of using the table name for certain widgets */
+  spotfireWidgetNameField: string,
   /** Path in Spotfire library for Spotfire widgets */
   spotfireWidgetHome: string,
   /** Path in Spotfire library for full Spotfire tools */
@@ -61,7 +63,7 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
     loginUrl: 'http://sepa-app-spl01',
     spotfireTypeField: 'suit.type',
     suitSpotfireFileField: 'spotfire.file',
-    suitSpotfireToolField: 'Tool'.
+    suitSpotfireToolField: 'Tool',
     spotfireEntitiesField: 'spotfireEntities',
     startUpProperty: 'attivioConfiguration',
     generalQueryName: 'General_nometadata',
@@ -72,6 +74,7 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
     spotfireTypeField: null,
     suitSpotfireFileField: null,
     suitSpotfireToolField: null,
+    spotfireWidgetNameField: null,
     spotfireEntitiesField: null,
     startUpProperty: null,
     generalQueryName: null,
@@ -144,10 +147,11 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
       toolType =  doc.getFirstValue(this.props.spotfireTypeField);
     }
 
-    let parameters = "initialLoad = False; ";
+    let parameters = "";
     // is it a full Spotfire tool
     if (toolType === 'spotfire' || toolType === 'spotfire-tool'){
 
+      parameters += "initialLoad = False; "
       if (toolType === 'spotfire'){
         file = doc.getFirstValue(this.props.suitSpotfireFileField);
       }
@@ -164,13 +168,26 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
       }
     }
     else if (toolType === 'spotfire-widget'){ // if it is a Spotfire widget used to display a non Spotfire document result
-      file = this.props.spotfireWidgetHome + table + " Summary";
-      let spotfireJson = {};
-      spotfireJson[this.props.widgetIdField] = docId.toLowerCase();
 
-      if (this.props.startUpProperty && this.props.widgetIdField){
-        parameters += this.props.startUpProperty + " = \"" + JSON.stringify(spotfireJson).replace(/"/g, '\\"') + "\"; ";
+      let widgetName = table;
+      // check if we don't want to use the table but a substitute name
+      if (doc.getFirstValue(this.props.spotfireWidgetNameField)){
+        widgetName = doc.getFirstValue(this.props.spotfireWidgetNameField);
       }
+
+      // set file name for widget to load
+      file = this.props.spotfireWidgetHome + widgetName + " Summary";
+      let spotfireJson = {};
+
+      // Spotfire seems to have issues with submitting many properties ot the same tool at once - so switching back to filter mode below
+      /*if (this.props.startUpProperty && this.props.widgetIdField){
+        spotfireJson[this.props.widgetIdField] = docId.toLowerCase();
+        parameters += this.props.startUpProperty + " = \"" + JSON.stringify(spotfireJson).replace(/"/g, '\\"') + "\"; ";
+      }*/
+
+      // hard coded filter table name for now - should be in config in future
+      let idColumn = "attivio_" + this.props.widgetIdField;
+      parameters = "SetFilter(tableName=\"Attivio Id Table\", columnName=\"" + idColumn+ "\", values={\"" + docId.toLowerCase() + "\"});";
 
     }
 
