@@ -42,10 +42,10 @@ type SpotfireWebPlayerProps = {
   toolType: 'spotfire' | 'spotfire-widget' | 'spotfire-tool';
   /** Spotfire property to be set to configure Spotfire component appropriately */
   startUpProperty: string;
-  /** Spotfire entity name to set for non entity matched queries */
-  generalQueryName: string;
-  /** Spotfire entity name to set for widget ids */
-  widgetIdField: string;
+  /** Spotfire property name or filter postfix to use for setting each widget */
+  widgetIdField: 'Id',
+  /** Spotfire table name to use for filtering of a widget */
+  widgetIdTable: 'Attivio Id Table',
   /** Spotfire consutimsation object to configure your Spotfire component */
   customizationInfo: object;
 }
@@ -68,6 +68,7 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
     startUpProperty: 'attivioConfiguration',
     generalQueryName: 'General_nometadata',
     widgetIdField: 'Id',*/
+    widgetIdTable: 'Attivio Id Table',
     // end of properties for testing 
     host: null,
     loginUrl: null,
@@ -79,6 +80,7 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
     startUpProperty: null,
     generalQueryName: null,
     widgetIdField: null, 
+    widgetIdTable: null,
     query: '',
     file: '',
     guid: '',
@@ -179,15 +181,15 @@ class SpotfireWebPlayer extends React.Component<SpotfireWebPlayerProps> {
       file = this.props.spotfireWidgetHome + widgetName + " Summary";
       let spotfireJson = {};
 
-      // Spotfire seems to have issues with submitting many properties ot the same tool at once - so switching back to filter mode below
+      // Spotfire seems to have issues with submitting many properties to the same dxp at once - so switching back to filter mode below
       /*if (this.props.startUpProperty && this.props.widgetIdField){
         spotfireJson[this.props.widgetIdField] = docId.toLowerCase();
         parameters += this.props.startUpProperty + " = \"" + JSON.stringify(spotfireJson).replace(/"/g, '\\"') + "\"; ";
       }*/
 
-      // hard coded filter table name for now - should be in config in future
-      let idColumn = "attivio_" + this.props.widgetIdField;
-      parameters = "SetFilter(tableName=\"Attivio Id Table\", columnName=\"" + idColumn+ "\", values={\"" + docId.toLowerCase() + "\"});";
+      // Set filer to be applied in widget
+      const idColumn = "attivio_" + this.props.widgetIdField;
+      parameters = "SetFilter(tableName=\"" + this.props.widgetIdTable + "\", columnName=\"" + idColumn+ "\", values={\"" + docId.toLowerCase() + "\"});";
 
     }
 

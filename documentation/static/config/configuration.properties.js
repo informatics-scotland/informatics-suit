@@ -101,7 +101,7 @@
     // the Deploy Webapp feature in the module will define the type of authentication that
     // will secure the UI. Note that you can also use 'NONE' during the course of developing
     // an application.
-    authType: 'XML',
+    authType: 'NONE',
 
     // This is the default principal realm to use when searching.
     defaultRealm: 'aie',
@@ -432,10 +432,12 @@
     spotfireToolHome: '/Projects/Metadata Tools/Tools/',
     // property to call in Spotfire when opening a tool initially
     startUpProperty: "attivioConfiguration",
-    // name of column to use for general filtering i.e. not exact entity matches
+    // property to call for general query filters i.e. those that did not match an entity
     generalQueryName: 'General_nometadata',
-    // Spotfire consutimsation object to configure your Spotfire component
+    // property name or filter postfix to use for setting each widget 
     widgetIdField: 'Id',
+    // table name to use for filtering of a widget
+    widgetIdTable: 'Attivio Id Table',
     // Default customisation settings for any Spotfire tool
     customizationInfo: {
       showTopHeader: false,
