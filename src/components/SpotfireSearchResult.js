@@ -92,9 +92,6 @@ export default class SpotfireSearchResult extends React.Component<SpotfireSearch
         let searchQuery = "";
         if (doc.signal && doc.signal.query){
             searchQuery = doc.signal.query;
-            //if (!this.props.query || this.props.query === ""){
-            //    spotfireProps.query = this.props.query;
-            //}
         }
 
         return (
@@ -123,7 +120,7 @@ export default class SpotfireSearchResult extends React.Component<SpotfireSearch
                 <SearchResultTags tags={docTags} docId={docId} view360Label={show360Link} />
                 </Col>
                 {showEntities ? <Col xs={3} sm={3}>
-                <DocumentEntityList doc={doc} entityFields={this.props.entityFields} />
+                <DocumentEntityList doc={doc} entityFields={entityFields} />
                 </Col> : null
                 }
             </Row>
